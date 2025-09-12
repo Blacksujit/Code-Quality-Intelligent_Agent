@@ -6,7 +6,6 @@ Tracks code quality metrics and trends across commits
 import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
-from typing import Dict, List, Tuple, Optional
 from datetime import datetime, timedelta
 import git
 from pathlib import Path

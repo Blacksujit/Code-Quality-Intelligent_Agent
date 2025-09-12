@@ -4,7 +4,6 @@ Provides deep code structure analysis using Abstract Syntax Trees
 """
 
 import ast
-from typing import Dict, List, Tuple, Set, Optional
 from pathlib import Path
 from dataclasses import dataclass
 from collections import defaultdict, Counter

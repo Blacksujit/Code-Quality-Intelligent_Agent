@@ -5,7 +5,6 @@ Implements intelligent reasoning workflows for code quality analysis
 
 from dataclasses import dataclass
 from enum import Enum
-import json
 import re
 from pathlib import Path
 

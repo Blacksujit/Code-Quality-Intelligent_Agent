@@ -5,7 +5,6 @@ Provides GitHub API integration for PR comments and repository analysis
 
 import os
 import requests
-import json
 from pathlib import Path
 
 

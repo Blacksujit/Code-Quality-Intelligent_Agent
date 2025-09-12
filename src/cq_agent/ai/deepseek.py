@@ -7,7 +7,6 @@ import requests
 import time
 import os
 from collections import deque
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from random import uniform
 

@@ -30,7 +30,6 @@ from cq_agent.web.components import (
     create_metrics_cards, create_severity_chart, create_hotspots_chart,
     create_trend_chart, create_language_distribution_chart, create_quality_score_gauge
 )
-from cq_agent.visualizations.dependency_graph import create_dependency_visualization
 from cq_agent.visualizations.advanced_deps import create_advanced_dependency_visualizations
 from cq_agent.visualizations.hotspots import create_hotspot_visualizations
 from cq_agent.visualizations.trends import create_trend_visualizations

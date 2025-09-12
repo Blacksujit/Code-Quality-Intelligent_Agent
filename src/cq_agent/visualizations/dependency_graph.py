@@ -5,7 +5,6 @@ Creates interactive dependency graphs and code relationship maps
 
 import networkx as nx
 import plotly.graph_objects as go
-from typing import Dict, List, Tuple, Set
 import pandas as pd
 from pathlib import Path
 import ast
