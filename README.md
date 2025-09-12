@@ -234,7 +234,8 @@ The Streamlit web interface provides a modern, interactive experience:
 8. **📈 Trends**: Quality metrics over time
 9. **🤖 AI Q&A**: Conversational codebase exploration
 
-### 🔌 **CLI Commands**
+
+## 🔌 CLI Commands
 
 #### **📊 Analysis Commands**
 
@@ -269,6 +270,42 @@ cq-agent qa . --local-llm
 cq-agent qa . --agent --agent-backend hf --agent-model "HuggingFaceH4/zephyr-7b-beta"
 ```
 
+---
+
+### 📋 **Command Reference**
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `analyze <path>` | Analyze code repository | `cq-agent analyze .` |
+| `--md <file>` | Generate Markdown report | `--md report.md` |
+| `--sarif <file>` | Generate SARIF report | `--sarif security.sarif` |
+| `--autofix-dry-run` | Preview safe fixes | `--autofix-dry-run` |
+| `--autofix` | Apply safe fixes | `--autofix` |
+| `--incremental` | Use incremental cache | `--incremental` |
+| `--no-incremental` | Disable cache | `--no-incremental` |
+| `--deepseek` | Enable DeepSeek AI | `--deepseek` |
+| `qa <path>` | Interactive Q&A | `cq-agent qa .` |
+| `--local-llm` | Use local LLM | `--local-llm` |
+| `--agent` | Use agentic Q&A | `--agent` |
+| `--agent-backend <type>` | AI backend type | `--agent-backend hf` |
+| `--agent-model <name>` | AI model name | `--agent-model llama3.1` |
+
+### 🔧 **Performance Flags**
+
+```bash
+# Fast mode for large repositories
+cq-agent analyze . --max-files 1000
+
+# Incremental analysis (default)
+cq-agent analyze . --incremental
+
+# Fresh analysis
+cq-agent analyze . --no-incremental
+
+# Parallel processing
+cq-agent analyze . --workers 8
+```
+---
 ---
 
 ## 🤖 AI Integration
@@ -374,42 +411,6 @@ cq-agent qa . --agent --agent-backend hf --agent-model "HuggingFaceH4/zephyr-7b-
 - Issue resolution trends
 
 ---
-
-## 🔌 CLI Commands
-
-### 📋 **Command Reference**
-
-| Command | Description | Example |
-|---------|-------------|---------|
-| `analyze <path>` | Analyze code repository | `cq-agent analyze .` |
-| `--md <file>` | Generate Markdown report | `--md report.md` |
-| `--sarif <file>` | Generate SARIF report | `--sarif security.sarif` |
-| `--autofix-dry-run` | Preview safe fixes | `--autofix-dry-run` |
-| `--autofix` | Apply safe fixes | `--autofix` |
-| `--incremental` | Use incremental cache | `--incremental` |
-| `--no-incremental` | Disable cache | `--no-incremental` |
-| `--deepseek` | Enable DeepSeek AI | `--deepseek` |
-| `qa <path>` | Interactive Q&A | `cq-agent qa .` |
-| `--local-llm` | Use local LLM | `--local-llm` |
-| `--agent` | Use agentic Q&A | `--agent` |
-| `--agent-backend <type>` | AI backend type | `--agent-backend hf` |
-| `--agent-model <name>` | AI model name | `--agent-model llama3.1` |
-
-### 🔧 **Performance Flags**
-
-```bash
-# Fast mode for large repositories
-cq-agent analyze . --max-files 1000
-
-# Incremental analysis (default)
-cq-agent analyze . --incremental
-
-# Fresh analysis
-cq-agent analyze . --no-incremental
-
-# Parallel processing
-cq-agent analyze . --workers 8
-```
 
 ---
 
