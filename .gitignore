@@ -8,6 +8,7 @@ secrets.toml
 config.ini
 credentials.json
 api_keys.txt
+streamlit-secrets-example.toml
 
 # 🔑 API Keys and Tokens
 DEEPSEEK_API_KEY
