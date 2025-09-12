@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  code-quality-agent:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+      - HF_TOKEN=${HF_TOKEN:-}
+      - HUGGINGFACEHUB_API_TOKEN=${HUGGINGFACEHUB_API_TOKEN:-}
+      - MAX_FILES=1000
+      - WORKER_THREADS=4
+    volumes:
+      - ./repos:/app/repos:ro  # Mount repositories for analysis
+      - ./cache:/app/cache     # Persistent cache
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Redis for caching (for production)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    profiles:
+      - production
+
+volumes:
+  redis_data:

@@ -1,0 +1,637 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "cq-agent",
+          "informationUri": "https://example.com",
+          "rules": []
+        }
+      },
+      "results": [
+        {
+          "ruleId": "dup:src\\cq_agent\\cli\\main.py:src\\cq_agent\\web\\app.py",
+          "level": "warning",
+          "message": {
+            "text": "These files appear to share duplicated blocks: src\\cq_agent\\cli\\main.py and src\\cq_agent\\web\\app.py."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/cli/main.py"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ruff:E402:F:\\Code-Quality-Agent\\src\\cq_agent\\web\\app.py:23",
+          "level": "warning",
+          "message": {
+            "text": "Module level import not at top of file"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/web/app.py"
+                },
+                "region": {
+                  "startLine": 23,
+                  "endLine": 23
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ruff:E402:F:\\Code-Quality-Agent\\src\\cq_agent\\web\\app.py:22",
+          "level": "warning",
+          "message": {
+            "text": "Module level import not at top of file"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/web/app.py"
+                },
+                "region": {
+                  "startLine": 22,
+                  "endLine": 22
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ruff:E402:F:\\Code-Quality-Agent\\src\\cq_agent\\web\\app.py:21",
+          "level": "warning",
+          "message": {
+            "text": "Module level import not at top of file"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/web/app.py"
+                },
+                "region": {
+                  "startLine": 21,
+                  "endLine": 21
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ruff:E402:F:\\Code-Quality-Agent\\src\\cq_agent\\web\\app.py:20",
+          "level": "warning",
+          "message": {
+            "text": "Module level import not at top of file"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/web/app.py"
+                },
+                "region": {
+                  "startLine": 20,
+                  "endLine": 20
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ruff:E402:F:\\Code-Quality-Agent\\src\\cq_agent\\web\\app.py:19",
+          "level": "warning",
+          "message": {
+            "text": "Module level import not at top of file"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/web/app.py"
+                },
+                "region": {
+                  "startLine": 19,
+                  "endLine": 19
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ruff:E402:F:\\Code-Quality-Agent\\src\\cq_agent\\web\\app.py:18",
+          "level": "warning",
+          "message": {
+            "text": "Module level import not at top of file"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/web/app.py"
+                },
+                "region": {
+                  "startLine": 18,
+                  "endLine": 18
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ruff:E402:F:\\Code-Quality-Agent\\src\\cq_agent\\web\\app.py:17",
+          "level": "warning",
+          "message": {
+            "text": "Module level import not at top of file"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/web/app.py"
+                },
+                "region": {
+                  "startLine": 17,
+                  "endLine": 17
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ruff:E402:F:\\Code-Quality-Agent\\src\\cq_agent\\web\\app.py:15",
+          "level": "warning",
+          "message": {
+            "text": "Module level import not at top of file"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/web/app.py"
+                },
+                "region": {
+                  "startLine": 15,
+                  "endLine": 15
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ruff:E402:F:\\Code-Quality-Agent\\src\\cq_agent\\web\\app.py:14",
+          "level": "warning",
+          "message": {
+            "text": "Module level import not at top of file"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/web/app.py"
+                },
+                "region": {
+                  "startLine": 14,
+                  "endLine": 14
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ruff:F401:F:\\Code-Quality-Agent\\src\\cq_agent\\web\\app.py:5",
+          "level": "warning",
+          "message": {
+            "text": "`typing.Tuple` imported but unused"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/web/app.py"
+                },
+                "region": {
+                  "startLine": 5,
+                  "endLine": 5
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ruff:F541:F:\\Code-Quality-Agent\\src\\cq_agent\\reporting\\markdown.py:14",
+          "level": "warning",
+          "message": {
+            "text": "f-string without any placeholders"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/reporting/markdown.py"
+                },
+                "region": {
+                  "startLine": 14,
+                  "endLine": 14
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ruff:F541:F:\\Code-Quality-Agent\\src\\cq_agent\\reporting\\markdown.py:11",
+          "level": "warning",
+          "message": {
+            "text": "f-string without any placeholders"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/reporting/markdown.py"
+                },
+                "region": {
+                  "startLine": 11,
+                  "endLine": 11
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ruff:F841:F:\\Code-Quality-Agent\\src\\cq_agent\\qa\\index.py:93",
+          "level": "warning",
+          "message": {
+            "text": "Local variable `query_lower` is assigned to but never used"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/qa/index.py"
+                },
+                "region": {
+                  "startLine": 93,
+                  "endLine": 93
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ruff:F401:F:\\Code-Quality-Agent\\src\\cq_agent\\cli\\main.py:4",
+          "level": "warning",
+          "message": {
+            "text": "`json` imported but unused"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/cli/main.py"
+                },
+                "region": {
+                  "startLine": 4,
+                  "endLine": 4
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ruff:F401:F:\\Code-Quality-Agent\\src\\cq_agent\\analyzers\\issue.py:3",
+          "level": "warning",
+          "message": {
+            "text": "`typing.Optional` imported but unused"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/analyzers/issue.py"
+                },
+                "region": {
+                  "startLine": 3,
+                  "endLine": 3
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "docs:docstring:src\\cq_agent\\web\\app.py",
+          "level": "note",
+          "message": {
+            "text": "Add a module docstring to explain purpose and usage."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/web/app.py"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "docs:docstring:src\\cq_agent\\scoring\\score.py",
+          "level": "note",
+          "message": {
+            "text": "Add a module docstring to explain purpose and usage."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/scoring/score.py"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "docs:docstring:src\\cq_agent\\reporting\\sarif.py",
+          "level": "note",
+          "message": {
+            "text": "Add a module docstring to explain purpose and usage."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/reporting/sarif.py"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "docs:docstring:src\\cq_agent\\reporting\\markdown.py",
+          "level": "note",
+          "message": {
+            "text": "Add a module docstring to explain purpose and usage."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/reporting/markdown.py"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "docs:docstring:src\\cq_agent\\qa\\index.py",
+          "level": "note",
+          "message": {
+            "text": "Add a module docstring to explain purpose and usage."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/qa/index.py"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "docs:docstring:src\\cq_agent\\metrics\\metrics.py",
+          "level": "note",
+          "message": {
+            "text": "Add a module docstring to explain purpose and usage."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/metrics/metrics.py"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "docs:docstring:src\\cq_agent\\ingestion\\reader.py",
+          "level": "note",
+          "message": {
+            "text": "Add a module docstring to explain purpose and usage."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/ingestion/reader.py"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "docs:docstring:src\\cq_agent\\ingestion\\__init__.py",
+          "level": "note",
+          "message": {
+            "text": "Add a module docstring to explain purpose and usage."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/ingestion/__init__.py"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "docs:docstring:src\\cq_agent\\graph\\deps.py",
+          "level": "note",
+          "message": {
+            "text": "Add a module docstring to explain purpose and usage."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/graph/deps.py"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "docs:docstring:src\\cq_agent\\cli\\main.py",
+          "level": "note",
+          "message": {
+            "text": "Add a module docstring to explain purpose and usage."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/cli/main.py"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "docs:docstring:src\\cq_agent\\autofix\\auto.py",
+          "level": "note",
+          "message": {
+            "text": "Add a module docstring to explain purpose and usage."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/autofix/auto.py"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "docs:docstring:src\\cq_agent\\analyzers\\python_analyzers.py",
+          "level": "note",
+          "message": {
+            "text": "Add a module docstring to explain purpose and usage."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/analyzers/python_analyzers.py"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "docs:docstring:src\\cq_agent\\analyzers\\js_analyzers.py",
+          "level": "note",
+          "message": {
+            "text": "Add a module docstring to explain purpose and usage."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/analyzers/js_analyzers.py"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "docs:docstring:src\\cq_agent\\analyzers\\issue.py",
+          "level": "note",
+          "message": {
+            "text": "Add a module docstring to explain purpose and usage."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/analyzers/issue.py"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "docs:docstring:src\\cq_agent\\analyzers\\__init__.py",
+          "level": "note",
+          "message": {
+            "text": "Add a module docstring to explain purpose and usage."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "F:/Code-Quality-Agent/src/cq_agent/analyzers/__init__.py"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 1
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

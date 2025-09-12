@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: code-quality-agent
+    env: python
+    buildCommand: "pip install -e . && pip install transformers torch --index-url https://download.pytorch.org/whl/cpu"
+    startCommand: "streamlit run src/cq_agent/web/app.py --server.port=$PORT --server.address=0.0.0.0 --server.headless=true --server.enableCORS=false --server.enableXsrfProtection=false"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: HF_TOKEN
+        sync: false
+      - key: HUGGINGFACEHUB_API_TOKEN
+        sync: false
