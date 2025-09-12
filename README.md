@@ -17,6 +17,7 @@
 
 ## 📋 Table of Contents
 
+- [📚 Architecture](#-architecture)
 - [🎯 Features](#-features)
 - [⚡ Quick Start](#-quick-start)
 - [🔧 Setup](#-setup)
@@ -27,11 +28,48 @@
 - [📊 Visualizations](#-visualizations)
 - [🚀 Deployment](#-deployment)
 - [🤝 Contributing](#-contributing)
-- [📚 Architecture](#-architecture)
 - [🔧 Troubleshooting](#-troubleshooting)
 - [📄 License](#-license)
 
 ---
+
+---
+
+## 📚 Architecture
+
+### 🏗️ **System Architecture**
+
+```mermaid
+graph TB
+    A[User Interface] --> B[CLI/Web]
+    B --> C[Analysis Engine]
+    C --> D[Language Analyzers]
+    C --> E[Quality Metrics]
+    C --> F[Dependency Graph]
+    C --> G[AI Integration]
+    
+    D --> H[Python Analyzers]
+    D --> I[JS/TS Analyzers]
+    
+    E --> J[Hotspot Detection]
+    E --> K[Issue Prioritization]
+    
+    F --> L[Network Analysis]
+    F --> M[Hierarchy Building]
+    
+    G --> N[DeepSeek API]
+    G --> O[Local LLM]
+    G --> P[Hugging Face]
+    
+    C --> Q[Visualization Engine]
+    Q --> R[Plotly Charts]
+    Q --> S[Interactive Graphs]
+    
+    C --> T[Report Generation]
+    T --> U[Markdown]
+    T --> V[SARIF]
+    T --> W[CSV]
+```
 
 ## 🎯 Features
 
@@ -556,42 +594,6 @@ mypy src/
 
 ---
 
-## 📚 Architecture
-
-### 🏗️ **System Architecture**
-
-```mermaid
-graph TB
-    A[User Interface] --> B[CLI/Web]
-    B --> C[Analysis Engine]
-    C --> D[Language Analyzers]
-    C --> E[Quality Metrics]
-    C --> F[Dependency Graph]
-    C --> G[AI Integration]
-    
-    D --> H[Python Analyzers]
-    D --> I[JS/TS Analyzers]
-    
-    E --> J[Hotspot Detection]
-    E --> K[Issue Prioritization]
-    
-    F --> L[Network Analysis]
-    F --> M[Hierarchy Building]
-    
-    G --> N[DeepSeek API]
-    G --> O[Local LLM]
-    G --> P[Hugging Face]
-    
-    C --> Q[Visualization Engine]
-    Q --> R[Plotly Charts]
-    Q --> S[Interactive Graphs]
-    
-    C --> T[Report Generation]
-    T --> U[Markdown]
-    T --> V[SARIF]
-    T --> W[CSV]
-```
-
 ### 🔧 **Core Modules**
 
 | Module | Purpose | Key Components |
@@ -695,8 +697,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **🚀 Built with ❤️ for the developer community**
 
-•[⭐ Star this repo](https://github.com/your-username/code-quality-agent) 
-•[🐛 Report Bug](https://github.com/your-username/code-quality-agent/issues) 
-•[✨ Request Feature](https://github.com/your-username/code-quality-agent/issues) •[📖 Documentation](https://github.com/your-username/code-quality-agent/wiki)
+•[⭐ Star this repo](https://github.com/Blacksujit/Code-Quality-Intelligent_Agent) 
 
 </div>
