@@ -33,13 +33,12 @@ from pathlib import Path
 
 from cq_agent.ingestion import load_repo
 from cq_agent.analyzers import analyze_python, analyze_js_ts, Issue
-from cq_agent.metrics.metrics import detect_near_duplicates, detect_docs_tests_hints
-from cq_agent.scoring.score import prioritize_issues
-from cq_agent.reporting.markdown import write_markdown_report
-from cq_agent.reporting.sarif import write_sarif
-from cq_agent.graph.deps import build_dependency_graph, compute_hotspots
-from cq_agent.qa.index import build_index
-from cq_agent.autofix.auto import compute_autofixes, generate_patch, apply_edits
+from cq_agent.metrics import detect_near_duplicates, detect_docs_tests_hints
+from cq_agent.scoring import prioritize_issues
+from cq_agent.reporting import write_markdown_report, write_sarif
+from cq_agent.graph import build_dependency_graph, compute_hotspots
+from cq_agent.qa import build_index
+from cq_agent.autofix import compute_autofixes, generate_patch, apply_edits
 from cq_agent.ai import enhance_issues_with_ai
 try:
 	from cq_agent.ai.deepseek import answer_codebase_question  # type: ignore

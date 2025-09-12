@@ -21,11 +21,11 @@ except Exception:
 
 from cq_agent.ingestion import load_repo
 from cq_agent.analyzers import analyze_python, analyze_js_ts, Issue
-from cq_agent.metrics.metrics import detect_near_duplicates, detect_docs_tests_hints
-from cq_agent.scoring.score import prioritize_issues
-from cq_agent.graph.deps import build_dependency_graph, compute_hotspots
-from cq_agent.reporting.markdown import build_markdown_text
-from cq_agent.autofix.auto import compute_autofixes, generate_patch, apply_edits
+from cq_agent.metrics import detect_near_duplicates, detect_docs_tests_hints
+from cq_agent.scoring import prioritize_issues
+from cq_agent.graph import build_dependency_graph, compute_hotspots
+from cq_agent.reporting import build_markdown_text
+from cq_agent.autofix import compute_autofixes, generate_patch, apply_edits
 from cq_agent.web.components import (
     create_metrics_cards, create_severity_chart, create_hotspots_chart,
     create_trend_chart, create_language_distribution_chart, create_quality_score_gauge
