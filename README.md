@@ -236,8 +236,8 @@ npm install -g eslint
 
 #### **📱 Access Options:**
 
-- **🎥 YouTube**: [Watch on YouTube](https://youtube.com/watch?v=YOUR_VIDEO_ID)
-- **📺 Direct Link**: [Direct Video Access](https://youtube.com/watch?v=YOUR_VIDEO_ID)
+- **🎥 YouTube**: [Watch on YouTube](coming soon ...)
+- **📺 Direct Link**: [Direct Video Access](scoming soon ...)
 - **📱 Mobile Friendly**: Optimized for mobile viewing
 - **⏯️ Playback Controls**: Pause, rewind, and speed control
 
@@ -245,6 +245,7 @@ npm install -g eslint
 
 > **"See how the Code Quality Intelligence Agent transforms complex codebases into actionable insights with AI-powered analysis, interactive visualizations, and intelligent recommendations."**
 
+- 🧑‍💻 **CLI**: Watch live CLI demo 
 - 🔍 **Real-time Analysis**: Watch live code analysis in action
 - 📊 **Interactive Dashboards**: Explore dynamic visualizations
 - 🤖 **AI Conversations**: Experience natural language Q&A
