@@ -161,11 +161,25 @@ def _import_remaining_modules():
         except:
             run_agentic_qa = None
         
-        # Make all imported functions available globally
+        # Make ALL imported functions available globally
         globals()['_repo_head_key'] = _repo_head_key
         globals()['build_tfidf_index'] = build_tfidf_index
         globals()['save_tfidf_index'] = save_tfidf_index
         globals()['load_tfidf_index'] = load_tfidf_index
+        globals()['run_ruff_on_files'] = run_ruff_on_files
+        globals()['run_bandit_on_paths'] = run_bandit_on_paths
+        globals()['enhance_issues_with_ai'] = enhance_issues_with_ai
+        globals()['answer_codebase_question'] = answer_codebase_question
+        globals()['create_metrics_cards'] = create_metrics_cards
+        globals()['create_severity_chart'] = create_severity_chart
+        globals()['create_hotspots_chart'] = create_hotspots_chart
+        globals()['create_trend_chart'] = create_trend_chart
+        globals()['create_language_distribution_chart'] = create_language_distribution_chart
+        globals()['create_quality_score_gauge'] = create_quality_score_gauge
+        globals()['create_advanced_dependency_visualizations'] = create_advanced_dependency_visualizations
+        globals()['create_hotspot_visualizations'] = create_hotspot_visualizations
+        globals()['create_trend_visualizations'] = create_trend_visualizations
+        globals()['create_langgraph_trend_analysis'] = create_langgraph_trend_analysis
     except ImportError:
         try:
             from web.components import (
@@ -187,11 +201,25 @@ def _import_remaining_modules():
             except:
                 run_agentic_qa = None
             
-            # Make all imported functions available globally
+            # Make ALL imported functions available globally
             globals()['_repo_head_key'] = _repo_head_key
             globals()['build_tfidf_index'] = build_tfidf_index
             globals()['save_tfidf_index'] = save_tfidf_index
             globals()['load_tfidf_index'] = load_tfidf_index
+            globals()['run_ruff_on_files'] = run_ruff_on_files
+            globals()['run_bandit_on_paths'] = run_bandit_on_paths
+            globals()['enhance_issues_with_ai'] = enhance_issues_with_ai
+            globals()['answer_codebase_question'] = answer_codebase_question
+            globals()['create_metrics_cards'] = create_metrics_cards
+            globals()['create_severity_chart'] = create_severity_chart
+            globals()['create_hotspots_chart'] = create_hotspots_chart
+            globals()['create_trend_chart'] = create_trend_chart
+            globals()['create_language_distribution_chart'] = create_language_distribution_chart
+            globals()['create_quality_score_gauge'] = create_quality_score_gauge
+            globals()['create_advanced_dependency_visualizations'] = create_advanced_dependency_visualizations
+            globals()['create_hotspot_visualizations'] = create_hotspot_visualizations
+            globals()['create_trend_visualizations'] = create_trend_visualizations
+            globals()['create_langgraph_trend_analysis'] = create_langgraph_trend_analysis
         except ImportError:
             # Create dummy functions if all imports fail
             def dummy_function(*args, **kwargs):
@@ -228,6 +256,20 @@ def _import_remaining_modules():
             globals()['build_tfidf_index'] = dummy_function
             globals()['save_tfidf_index'] = dummy_function
             globals()['load_tfidf_index'] = dummy_function
+            globals()['run_ruff_on_files'] = dummy_function
+            globals()['run_bandit_on_paths'] = dummy_function
+            globals()['enhance_issues_with_ai'] = dummy_function
+            globals()['answer_codebase_question'] = dummy_function
+            globals()['create_metrics_cards'] = dummy_function
+            globals()['create_severity_chart'] = dummy_function
+            globals()['create_hotspots_chart'] = dummy_function
+            globals()['create_trend_chart'] = dummy_function
+            globals()['create_language_distribution_chart'] = dummy_function
+            globals()['create_quality_score_gauge'] = dummy_function
+            globals()['create_advanced_dependency_visualizations'] = dummy_function
+            globals()['create_hotspot_visualizations'] = dummy_function
+            globals()['create_trend_visualizations'] = dummy_function
+            globals()['create_langgraph_trend_analysis'] = dummy_function
 
 # Import the remaining modules
 _import_remaining_modules()
