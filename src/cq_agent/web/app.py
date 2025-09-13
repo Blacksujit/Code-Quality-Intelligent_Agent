@@ -160,6 +160,9 @@ def _import_remaining_modules():
             from cq_agent.ai.agent_qa import run_agentic_qa
         except:
             run_agentic_qa = None
+        
+        # Make _repo_head_key available globally
+        globals()['_repo_head_key'] = _repo_head_key
     except ImportError:
         try:
             from web.components import (
@@ -180,6 +183,9 @@ def _import_remaining_modules():
                 from ai.agent_qa import run_agentic_qa
             except:
                 run_agentic_qa = None
+            
+            # Make _repo_head_key available globally
+            globals()['_repo_head_key'] = _repo_head_key
         except ImportError:
             # Create dummy functions if all imports fail
             def dummy_function(*args, **kwargs):
@@ -204,9 +210,26 @@ def _import_remaining_modules():
             enhance_issues_with_ai = dummy_function
             answer_codebase_question = dummy_function
             run_agentic_qa = None
+            
+            # Make _repo_head_key available globally
+            def _repo_head_key(repo):
+                try:
+                    return repo.head.commit.hexsha[:8]
+                except:
+                    return "unknown"
+            globals()['_repo_head_key'] = _repo_head_key
 
 # Import the remaining modules
 _import_remaining_modules()
+
+# Ensure _repo_head_key is available globally
+if '_repo_head_key' not in globals():
+    def _repo_head_key(repo):
+        """Fallback function for _repo_head_key"""
+        try:
+            return repo.head.commit.hexsha[:8]
+        except:
+            return "unknown"
 
 
 # Helper: render a widget safely so one error doesn't break the whole page
