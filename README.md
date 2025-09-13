@@ -20,6 +20,7 @@
 - [📚 Architecture](#-architecture)
 - [🎯 Features](#-features)
 - [⚡ Quick Start](#-quick-start)
+- [🎥 Explanation Video](#-explanation-video)
 - [🔧 Setup](#-setup)
 - [📖 Usage](#-usage)
 - [🤖 AI Integration](#-ai-integration)
@@ -208,6 +209,105 @@ pip install ruff bandit radon
 # JavaScript/TypeScript analysis (optional)
 npm install -g eslint
 ```
+
+---
+
+## 🎥 Explanation Video
+
+### 📺 **Project Demo & Walkthrough**
+
+<div align="center">
+
+[![Code Quality Intelligence Agent Demo](https://img.shields.io/badge/🎥_Watch_Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtube.com/watch?v=YOUR_VIDEO_ID)
+
+**📹 Complete Project Explanation & Demo Video**
+
+</div>
+
+#### **🎯 What You'll See in the Video:**
+
+**🚀 Project Overview (0:00 - 2:00)**
+- Introduction to Code Quality Intelligence Agent
+- Key features and capabilities
+- Target audience and use cases
+
+**🏗️ Architecture Deep Dive (2:00 - 5:00)**
+- System architecture explanation
+- Multi-language analysis capabilities
+- AI integration and reasoning
+
+**💻 Live Demo - Web Interface (5:00 - 15:00)**
+- Streamlit dashboard walkthrough
+- Repository analysis demonstration
+- Interactive visualizations showcase
+- AI-powered Q&A demonstration
+
+**🔧 CLI Commands Demo (15:00 - 20:00)**
+- Command-line interface usage
+- Batch analysis capabilities
+- Report generation examples
+
+**📊 Advanced Features (20:00 - 25:00)**
+- Dependency graph analysis
+- Code hotspot identification
+- Trend analysis and metrics
+- Autofix suggestions
+
+**🤖 AI Integration Showcase (25:00 - 30:00)**
+- DeepSeek API integration
+- Local LLM fallback
+- Hugging Face inference
+- Conversational Q&A examples
+
+**🚀 Deployment Guide (30:00 - 35:00)**
+- Local setup instructions
+- Streamlit Cloud deployment
+- Docker containerization
+- Production considerations
+
+**❓ Q&A Session (35:00 - 40:00)**
+- Common questions answered
+- Troubleshooting tips
+- Best practices discussion
+
+#### **📋 Video Timestamps:**
+
+| Time | Section | Description |
+|------|---------|-------------|
+| 0:00 | Introduction | Project overview and motivation |
+| 2:00 | Architecture | System design and components |
+| 5:00 | Web Demo | Streamlit interface walkthrough |
+| 15:00 | CLI Demo | Command-line usage examples |
+| 20:00 | Advanced Features | Visualizations and analysis |
+| 25:00 | AI Integration | AI-powered capabilities |
+| 30:00 | Deployment | Setup and deployment guide |
+| 35:00 | Q&A | Questions and answers |
+
+#### **🎬 Video Quality & Features:**
+
+- ✅ **HD Quality**: 1080p recording for clear visibility
+- ✅ **Screen Recording**: Full desktop capture with annotations
+- ✅ **Audio Commentary**: Clear explanations throughout
+- ✅ **Code Highlighting**: Syntax highlighting for better understanding
+- ✅ **Interactive Elements**: Live demonstrations of all features
+- ✅ **Multiple Scenarios**: Different repository types analyzed
+
+#### **📱 Access Options:**
+
+- **🎥 YouTube**: [Watch on YouTube](https://youtube.com/watch?v=YOUR_VIDEO_ID)
+- **📺 Direct Link**: [Direct Video Access](https://youtube.com/watch?v=YOUR_VIDEO_ID)
+- **📱 Mobile Friendly**: Optimized for mobile viewing
+- **⏯️ Playback Controls**: Pause, rewind, and speed control
+
+#### **💡 Video Highlights:**
+
+> **"See how the Code Quality Intelligence Agent transforms complex codebases into actionable insights with AI-powered analysis, interactive visualizations, and intelligent recommendations."**
+
+- 🔍 **Real-time Analysis**: Watch live code analysis in action
+- 📊 **Interactive Dashboards**: Explore dynamic visualizations
+- 🤖 **AI Conversations**: Experience natural language Q&A
+- 🚀 **One-Click Deployment**: See effortless setup process
+- 📈 **Comprehensive Reports**: Generate detailed quality reports
 
 ---
 
