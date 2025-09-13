@@ -6,9 +6,14 @@ import sys
 from typing import List
 # Ensure 'src' is on sys.path when running via Streamlit without editable install
 _CURRENT = Path(__file__).resolve()
-_SRC_DIR = _CURRENT.parents[2]
+_SRC_DIR = _CURRENT.parents[2]  # Go up from web/app.py -> cq_agent -> src
 if str(_SRC_DIR) not in sys.path:
 	sys.path.insert(0, str(_SRC_DIR))
+
+# Also try adding the current directory's parent (cq_agent)
+_CQ_AGENT_DIR = _CURRENT.parent  # cq_agent directory
+if str(_CQ_AGENT_DIR) not in sys.path:
+	sys.path.insert(0, str(_CQ_AGENT_DIR))
 
 import streamlit as st
 import pandas as pd
