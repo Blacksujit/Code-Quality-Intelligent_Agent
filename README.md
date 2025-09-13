@@ -17,10 +17,10 @@
 
 ## 📋 Table of Contents
 
+- [🎥 Explanation Video](#-explanation-video)
 - [📚 Architecture](#-architecture)
 - [🎯 Features](#-features)
 - [⚡ Quick Start](#-quick-start)
-- [🎥 Explanation Video](#-explanation-video)
 - [🔧 Setup](#-setup)
 - [📖 Usage](#-usage)
 - [🤖 AI Integration](#-ai-integration)
@@ -33,6 +33,47 @@
 - [📄 License](#-license)
 
 ---
+
+## 🎥 Explanation Video
+
+### 📺 **Project Demo & Walkthrough**
+
+<div align="center">
+
+[![Code Quality Intelligence Agent Demo](./MVP-images/AI-agent.png)](https://youtu.be/pa7KMkA-bxI)
+
+**📹 Complete Project Explanation & Demo Video**
+
+</div>
+
+
+#### **🎬 Video Quality & Features:**
+
+- ✅ **HD Quality**: 1080p recording for clear visibility
+- ✅ **Screen Recording**: Full desktop capture with annotations
+- ✅ **Audio Commentary**: Clear explanations throughout
+- ✅ **Code Highlighting**: Syntax highlighting for better understanding
+- ✅ **Interactive Elements**: Live demonstrations of all features
+- ✅ **Multiple Scenarios**: Different repository types analyzed
+
+#### **📱 Access Options:**
+
+- **🎥 YouTube**: [Watch on YouTube](coming soon ...)
+- **📺 Direct Link**: [Direct Video Access](scoming soon ...)
+- **📱 Mobile Friendly**: Optimized for mobile viewing
+- **⏯️ Playback Controls**: Pause, rewind, and speed control
+
+#### **💡 Video Highlights:**
+
+> **"See how the Code Quality Intelligence Agent transforms complex codebases into actionable insights with AI-powered analysis, interactive visualizations, and intelligent recommendations."**
+
+- 🧑‍💻 **CLI**: Watch live CLI demo 
+- 🔍 **Real-time Analysis**: Watch live code analysis in action
+- 📊 **Interactive Dashboards**: Explore dynamic visualizations
+- 🤖 **AI Conversations**: Experience natural language Q&A
+- 🚀 **One-Click Deployment**: See effortless setup process
+- 📈 **Comprehensive Reports**: Generate detailed quality reports
+
 
 ---
 
@@ -212,47 +253,6 @@ npm install -g eslint
 
 ---
 
-## 🎥 Explanation Video
-
-### 📺 **Project Demo & Walkthrough**
-
-<div align="center">
-
-[![Code Quality Intelligence Agent Demo](https://img.shields.io/badge/🎥_Watch_Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/pa7KMkA-bxI)
-
-**📹 Complete Project Explanation & Demo Video**
-
-</div>
-
-
-#### **🎬 Video Quality & Features:**
-
-- ✅ **HD Quality**: 1080p recording for clear visibility
-- ✅ **Screen Recording**: Full desktop capture with annotations
-- ✅ **Audio Commentary**: Clear explanations throughout
-- ✅ **Code Highlighting**: Syntax highlighting for better understanding
-- ✅ **Interactive Elements**: Live demonstrations of all features
-- ✅ **Multiple Scenarios**: Different repository types analyzed
-
-#### **📱 Access Options:**
-
-- **🎥 YouTube**: [Watch on YouTube](coming soon ...)
-- **📺 Direct Link**: [Direct Video Access](scoming soon ...)
-- **📱 Mobile Friendly**: Optimized for mobile viewing
-- **⏯️ Playback Controls**: Pause, rewind, and speed control
-
-#### **💡 Video Highlights:**
-
-> **"See how the Code Quality Intelligence Agent transforms complex codebases into actionable insights with AI-powered analysis, interactive visualizations, and intelligent recommendations."**
-
-- 🧑‍💻 **CLI**: Watch live CLI demo 
-- 🔍 **Real-time Analysis**: Watch live code analysis in action
-- 📊 **Interactive Dashboards**: Explore dynamic visualizations
-- 🤖 **AI Conversations**: Experience natural language Q&A
-- 🚀 **One-Click Deployment**: See effortless setup process
-- 📈 **Comprehensive Reports**: Generate detailed quality reports
-
----
 
 ## 📖 Usage
 
