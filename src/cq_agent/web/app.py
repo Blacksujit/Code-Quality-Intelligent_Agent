@@ -831,7 +831,7 @@ if repo_summary is not None and issues_df is not None:
 		st.markdown("### 📁 File Details & Code Context")
 		if not issues_df.empty:
 			# Group issues by file
-			file_issues = issues_df.groupby('file').apply(lambda x: x.to_dict('records')).to_dict()
+			file_issues = issues_df.groupby('file').apply(lambda x: x.to_dict('records'), include_groups=False).to_dict()
 			selected_file = st.selectbox("📂 Select file to view details:", list(file_issues.keys()))
 			
 			if selected_file:
