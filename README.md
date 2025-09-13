@@ -218,7 +218,7 @@ npm install -g eslint
 
 <div align="center">
 
-[![Code Quality Intelligence Agent Demo](https://img.shields.io/badge/🎥_Watch_Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtube.com/watch?v=YOUR_VIDEO_ID)
+[![Code Quality Intelligence Agent Demo](https://img.shields.io/badge/🎥_Watch_Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/pa7KMkA-bxI)
 
 **📹 Complete Project Explanation & Demo Video**
 
