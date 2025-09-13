@@ -9,6 +9,7 @@ import pandas as pd
 from pathlib import Path
 import ast
 import re
+from typing import Dict, List, Tuple, Set, Optional
 
 
 class DependencyVisualizer:

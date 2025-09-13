@@ -270,7 +270,7 @@ cq-agent qa . --local-llm
 cq-agent qa . --agent --agent-backend hf --agent-model "HuggingFaceH4/zephyr-7b-beta"
 ```
 
----
+----
 
 ### 📋 **Command Reference**
 

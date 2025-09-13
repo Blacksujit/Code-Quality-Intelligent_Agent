@@ -9,6 +9,7 @@ import numpy as np
 from datetime import datetime, timedelta
 import git
 from pathlib import Path
+from typing import Dict, List, Tuple, Optional
 
 
 class TrendAnalyzer:

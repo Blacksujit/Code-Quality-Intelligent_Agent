@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from enum import Enum
 import re
 from pathlib import Path
+from typing import Dict, List, Tuple, Optional, Any
 
 
 class ReasoningStep(Enum):
