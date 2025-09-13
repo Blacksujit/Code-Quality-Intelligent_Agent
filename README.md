@@ -116,7 +116,7 @@ graph TB
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/code-quality-agent.git
+git clone https://github.com/Blacksujit/Code-Quality-Intelligent_Agent
 cd code-quality-agent
 
 # Create virtual environment
