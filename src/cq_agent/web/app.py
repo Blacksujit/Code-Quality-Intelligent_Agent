@@ -24,31 +24,64 @@ try:
 except Exception:
     pass
 
-from cq_agent.ingestion import load_repo
-from cq_agent.analyzers import analyze_python, analyze_js_ts, Issue
-from cq_agent.metrics.metrics import detect_near_duplicates, detect_docs_tests_hints
-from cq_agent.scoring.score import prioritize_issues
-from cq_agent.graph.deps import build_dependency_graph, compute_hotspots
-from cq_agent.reporting.markdown import build_markdown_text
-from cq_agent.autofix.auto import compute_autofixes, generate_patch, apply_edits
-from cq_agent.web.components import (
-    create_metrics_cards, create_severity_chart, create_hotspots_chart,
-    create_trend_chart, create_language_distribution_chart, create_quality_score_gauge
-)
-from cq_agent.visualizations.advanced_deps import create_advanced_dependency_visualizations
-from cq_agent.visualizations.hotspots import create_hotspot_visualizations
-from cq_agent.visualizations.trends import create_trend_visualizations
-from cq_agent.agents.langgraph_trends import create_langgraph_trend_analysis
-from cq_agent.qa.index import build_index as build_tfidf_index
-from cq_agent.qa.index import save_index as save_tfidf_index
-from cq_agent.qa.index import load_index as load_tfidf_index
-from cq_agent.qa.index import _repo_head_key
-from cq_agent.analyzers.python_analyzers import run_ruff_on_files, run_bandit_on_paths
-from cq_agent.ai import enhance_issues_with_ai, answer_codebase_question
+# Try importing with cq_agent prefix first, fallback to direct imports
 try:
-    from cq_agent.ai.agent_qa import run_agentic_qa
-except Exception:
-    run_agentic_qa = None
+    from cq_agent.ingestion import load_repo
+    from cq_agent.analyzers import analyze_python, analyze_js_ts, Issue
+    from cq_agent.metrics.metrics import detect_near_duplicates, detect_docs_tests_hints
+    from cq_agent.scoring.score import prioritize_issues
+    from cq_agent.graph.deps import build_dependency_graph, compute_hotspots
+    from cq_agent.reporting.markdown import build_markdown_text
+    from cq_agent.autofix.auto import compute_autofixes, generate_patch, apply_edits
+except ImportError:
+    # Fallback to direct imports if cq_agent package not found
+    from ingestion import load_repo
+    from analyzers import analyze_python, analyze_js_ts, Issue
+    from metrics.metrics import detect_near_duplicates, detect_docs_tests_hints
+    from scoring.score import prioritize_issues
+    from graph.deps import build_dependency_graph, compute_hotspots
+    from reporting.markdown import build_markdown_text
+    from autofix.auto import compute_autofixes, generate_patch, apply_edits
+# Try importing remaining modules with cq_agent prefix first, fallback to direct imports
+try:
+    from cq_agent.web.components import (
+        create_metrics_cards, create_severity_chart, create_hotspots_chart,
+        create_trend_chart, create_language_distribution_chart, create_quality_score_gauge
+    )
+    from cq_agent.visualizations.advanced_deps import create_advanced_dependency_visualizations
+    from cq_agent.visualizations.hotspots import create_hotspot_visualizations
+    from cq_agent.visualizations.trends import create_trend_visualizations
+    from cq_agent.agents.langgraph_trends import create_langgraph_trend_analysis
+    from cq_agent.qa.index import build_index as build_tfidf_index
+    from cq_agent.qa.index import save_index as save_tfidf_index
+    from cq_agent.qa.index import load_index as load_tfidf_index
+    from cq_agent.qa.index import _repo_head_key
+    from cq_agent.analyzers.python_analyzers import run_ruff_on_files, run_bandit_on_paths
+    from cq_agent.ai import enhance_issues_with_ai, answer_codebase_question
+    try:
+        from cq_agent.ai.agent_qa import run_agentic_qa
+    except Exception:
+        run_agentic_qa = None
+except ImportError:
+    # Fallback to direct imports if cq_agent package not found
+    from web.components import (
+        create_metrics_cards, create_severity_chart, create_hotspots_chart,
+        create_trend_chart, create_language_distribution_chart, create_quality_score_gauge
+    )
+    from visualizations.advanced_deps import create_advanced_dependency_visualizations
+    from visualizations.hotspots import create_hotspot_visualizations
+    from visualizations.trends import create_trend_visualizations
+    from agents.langgraph_trends import create_langgraph_trend_analysis
+    from qa.index import build_index as build_tfidf_index
+    from qa.index import save_index as save_tfidf_index
+    from qa.index import load_index as load_tfidf_index
+    from qa.index import _repo_head_key
+    from analyzers.python_analyzers import run_ruff_on_files, run_bandit_on_paths
+    from ai import enhance_issues_with_ai, answer_codebase_question
+    try:
+        from ai.agent_qa import run_agentic_qa
+    except Exception:
+        run_agentic_qa = None
 
 
 # Helper: render a widget safely so one error doesn't break the whole page
