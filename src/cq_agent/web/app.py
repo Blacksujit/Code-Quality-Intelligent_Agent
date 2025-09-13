@@ -180,6 +180,7 @@ def _import_remaining_modules():
         globals()['create_hotspot_visualizations'] = create_hotspot_visualizations
         globals()['create_trend_visualizations'] = create_trend_visualizations
         globals()['create_langgraph_trend_analysis'] = create_langgraph_trend_analysis
+        globals()['run_agentic_qa'] = run_agentic_qa
     except ImportError:
         try:
             from web.components import (
@@ -220,6 +221,7 @@ def _import_remaining_modules():
             globals()['create_hotspot_visualizations'] = create_hotspot_visualizations
             globals()['create_trend_visualizations'] = create_trend_visualizations
             globals()['create_langgraph_trend_analysis'] = create_langgraph_trend_analysis
+            globals()['run_agentic_qa'] = run_agentic_qa
         except ImportError:
             # Create dummy functions if all imports fail
             def dummy_function(*args, **kwargs):
@@ -270,6 +272,7 @@ def _import_remaining_modules():
             globals()['create_hotspot_visualizations'] = dummy_function
             globals()['create_trend_visualizations'] = dummy_function
             globals()['create_langgraph_trend_analysis'] = dummy_function
+            globals()['run_agentic_qa'] = None
 
 # Import the remaining modules
 _import_remaining_modules()
