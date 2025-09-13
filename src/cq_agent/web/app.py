@@ -161,8 +161,11 @@ def _import_remaining_modules():
         except:
             run_agentic_qa = None
         
-        # Make _repo_head_key available globally
+        # Make all imported functions available globally
         globals()['_repo_head_key'] = _repo_head_key
+        globals()['build_tfidf_index'] = build_tfidf_index
+        globals()['save_tfidf_index'] = save_tfidf_index
+        globals()['load_tfidf_index'] = load_tfidf_index
     except ImportError:
         try:
             from web.components import (
@@ -184,8 +187,11 @@ def _import_remaining_modules():
             except:
                 run_agentic_qa = None
             
-            # Make _repo_head_key available globally
+            # Make all imported functions available globally
             globals()['_repo_head_key'] = _repo_head_key
+            globals()['build_tfidf_index'] = build_tfidf_index
+            globals()['save_tfidf_index'] = save_tfidf_index
+            globals()['load_tfidf_index'] = load_tfidf_index
         except ImportError:
             # Create dummy functions if all imports fail
             def dummy_function(*args, **kwargs):
@@ -211,13 +217,17 @@ def _import_remaining_modules():
             answer_codebase_question = dummy_function
             run_agentic_qa = None
             
-            # Make _repo_head_key available globally
+            # Make all functions available globally
             def _repo_head_key(repo):
                 try:
                     return repo.head.commit.hexsha[:8]
                 except:
                     return "unknown"
+            
             globals()['_repo_head_key'] = _repo_head_key
+            globals()['build_tfidf_index'] = dummy_function
+            globals()['save_tfidf_index'] = dummy_function
+            globals()['load_tfidf_index'] = dummy_function
 
 # Import the remaining modules
 _import_remaining_modules()
