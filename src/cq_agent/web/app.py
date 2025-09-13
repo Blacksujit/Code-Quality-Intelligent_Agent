@@ -4,16 +4,25 @@ import io
 from pathlib import Path
 import sys
 from typing import List
-# Ensure 'src' is on sys.path when running via Streamlit without editable install
+# Ensure proper Python path for Streamlit Cloud deployment
 _CURRENT = Path(__file__).resolve()
-_SRC_DIR = _CURRENT.parents[2]  # Go up from web/app.py -> cq_agent -> src
-if str(_SRC_DIR) not in sys.path:
-	sys.path.insert(0, str(_SRC_DIR))
 
-# Also try adding the current directory's parent (cq_agent)
-_CQ_AGENT_DIR = _CURRENT.parent  # cq_agent directory
-if str(_CQ_AGENT_DIR) not in sys.path:
-	sys.path.insert(0, str(_CQ_AGENT_DIR))
+# Try multiple possible paths for different deployment scenarios
+_possible_paths = [
+    _CURRENT.parents[2],  # Go up from web/app.py -> cq_agent -> src
+    _CURRENT.parent,      # cq_agent directory
+    _CURRENT.parents[1],  # Go up from web/app.py -> cq_agent
+    Path("/mount/src/code-quality-intelligent_agent/src"),  # Streamlit Cloud path
+    Path("/mount/src/code-quality-intelligent_agent"),      # Streamlit Cloud root
+]
+
+for path in _possible_paths:
+    if path.exists() and str(path) not in sys.path:
+        sys.path.insert(0, str(path))
+
+# Also add the current working directory
+if str(Path.cwd()) not in sys.path:
+    sys.path.insert(0, str(Path.cwd()))
 
 import streamlit as st
 import pandas as pd
@@ -24,64 +33,170 @@ try:
 except Exception:
     pass
 
-# Try importing with cq_agent prefix first, fallback to direct imports
+# Robust import strategy for different deployment environments
+def _import_modules():
+    """Import all required modules with multiple fallback strategies"""
+    modules = {}
+    
+    # Try different import strategies
+    import_strategies = [
+        # Strategy 1: cq_agent package imports
+        {
+            'ingestion': 'cq_agent.ingestion',
+            'analyzers': 'cq_agent.analyzers', 
+            'metrics': 'cq_agent.metrics.metrics',
+            'scoring': 'cq_agent.scoring.score',
+            'graph': 'cq_agent.graph.deps',
+            'reporting': 'cq_agent.reporting.markdown',
+            'autofix': 'cq_agent.autofix.auto'
+        },
+        # Strategy 2: Direct module imports
+        {
+            'ingestion': 'ingestion',
+            'analyzers': 'analyzers',
+            'metrics': 'metrics.metrics', 
+            'scoring': 'scoring.score',
+            'graph': 'graph.deps',
+            'reporting': 'reporting.markdown',
+            'autofix': 'autofix.auto'
+        },
+        # Strategy 3: Absolute path imports
+        {
+            'ingestion': 'src.cq_agent.ingestion',
+            'analyzers': 'src.cq_agent.analyzers',
+            'metrics': 'src.cq_agent.metrics.metrics',
+            'scoring': 'src.cq_agent.scoring.score', 
+            'graph': 'src.cq_agent.graph.deps',
+            'reporting': 'src.cq_agent.reporting.markdown',
+            'autofix': 'src.cq_agent.autofix.auto'
+        }
+    ]
+    
+    for strategy in import_strategies:
+        try:
+            # Try to import all modules with this strategy
+            for name, module_path in strategy.items():
+                if '.' in module_path:
+                    module_name, attr_name = module_path.rsplit('.', 1)
+                    module = __import__(module_name, fromlist=[attr_name])
+                    modules[name] = getattr(module, attr_name)
+                else:
+                    modules[name] = __import__(module_path)
+            
+            # If we get here, all imports succeeded
+            return modules
+            
+        except ImportError:
+            continue
+    
+    # If all strategies fail, raise an error
+    raise ImportError("Could not import required modules with any strategy")
+
+# Import the modules
+_modules = _import_modules()
+
+# Assign to global namespace
+load_repo = _modules['ingestion'].load_repo
+analyze_python = _modules['analyzers'].analyze_python
+analyze_js_ts = _modules['analyzers'].analyze_js_ts
+Issue = _modules['analyzers'].Issue
+detect_near_duplicates = _modules['metrics'].detect_near_duplicates
+detect_docs_tests_hints = _modules['metrics'].detect_docs_tests_hints
+prioritize_issues = _modules['scoring'].prioritize_issues
+build_dependency_graph = _modules['graph'].build_dependency_graph
+compute_hotspots = _modules['graph'].compute_hotspots
+build_markdown_text = _modules['reporting'].build_markdown_text
+compute_autofixes = _modules['autofix'].compute_autofixes
+generate_patch = _modules['autofix'].generate_patch
+apply_edits = _modules['autofix'].apply_edits
+# Import remaining modules with robust strategy
+def _import_remaining_modules():
+    """Import remaining modules with multiple fallback strategies"""
+    modules = {}
+    
+    # Try different import strategies for remaining modules
+    import_strategies = [
+        # Strategy 1: cq_agent package imports
+        {
+            'web_components': 'cq_agent.web.components',
+            'advanced_deps': 'cq_agent.visualizations.advanced_deps',
+            'hotspots': 'cq_agent.visualizations.hotspots', 
+            'trends': 'cq_agent.visualizations.trends',
+            'langgraph_trends': 'cq_agent.agents.langgraph_trends',
+            'qa_index': 'cq_agent.qa.index',
+            'python_analyzers': 'cq_agent.analyzers.python_analyzers',
+            'ai': 'cq_agent.ai',
+            'ai_agent_qa': 'cq_agent.ai.agent_qa'
+        },
+        # Strategy 2: Direct module imports
+        {
+            'web_components': 'web.components',
+            'advanced_deps': 'visualizations.advanced_deps',
+            'hotspots': 'visualizations.hotspots',
+            'trends': 'visualizations.trends', 
+            'langgraph_trends': 'agents.langgraph_trends',
+            'qa_index': 'qa.index',
+            'python_analyzers': 'analyzers.python_analyzers',
+            'ai': 'ai',
+            'ai_agent_qa': 'ai.agent_qa'
+        },
+        # Strategy 3: Absolute path imports
+        {
+            'web_components': 'src.cq_agent.web.components',
+            'advanced_deps': 'src.cq_agent.visualizations.advanced_deps',
+            'hotspots': 'src.cq_agent.visualizations.hotspots',
+            'trends': 'src.cq_agent.visualizations.trends',
+            'langgraph_trends': 'src.cq_agent.agents.langgraph_trends', 
+            'qa_index': 'src.cq_agent.qa.index',
+            'python_analyzers': 'src.cq_agent.analyzers.python_analyzers',
+            'ai': 'src.cq_agent.ai',
+            'ai_agent_qa': 'src.cq_agent.ai.agent_qa'
+        }
+    ]
+    
+    for strategy in import_strategies:
+        try:
+            # Try to import all modules with this strategy
+            for name, module_path in strategy.items():
+                modules[name] = __import__(module_path, fromlist=['*'])
+            
+            # If we get here, all imports succeeded
+            return modules
+            
+        except ImportError:
+            continue
+    
+    # If all strategies fail, raise an error
+    raise ImportError("Could not import remaining modules with any strategy")
+
+# Import the remaining modules
+_remaining_modules = _import_remaining_modules()
+
+# Assign to global namespace
+create_metrics_cards = _remaining_modules['web_components'].create_metrics_cards
+create_severity_chart = _remaining_modules['web_components'].create_severity_chart
+create_hotspots_chart = _remaining_modules['web_components'].create_hotspots_chart
+create_trend_chart = _remaining_modules['web_components'].create_trend_chart
+create_language_distribution_chart = _remaining_modules['web_components'].create_language_distribution_chart
+create_quality_score_gauge = _remaining_modules['web_components'].create_quality_score_gauge
+create_advanced_dependency_visualizations = _remaining_modules['advanced_deps'].create_advanced_dependency_visualizations
+create_hotspot_visualizations = _remaining_modules['hotspots'].create_hotspot_visualizations
+create_trend_visualizations = _remaining_modules['trends'].create_trend_visualizations
+create_langgraph_trend_analysis = _remaining_modules['langgraph_trends'].create_langgraph_trend_analysis
+build_tfidf_index = _remaining_modules['qa_index'].build_index
+save_tfidf_index = _remaining_modules['qa_index'].save_index
+load_tfidf_index = _remaining_modules['qa_index'].load_index
+_repo_head_key = _remaining_modules['qa_index']._repo_head_key
+run_ruff_on_files = _remaining_modules['python_analyzers'].run_ruff_on_files
+run_bandit_on_paths = _remaining_modules['python_analyzers'].run_bandit_on_paths
+enhance_issues_with_ai = _remaining_modules['ai'].enhance_issues_with_ai
+answer_codebase_question = _remaining_modules['ai'].answer_codebase_question
+
+# Try to import agentic QA, but don't fail if it's not available
 try:
-    from cq_agent.ingestion import load_repo
-    from cq_agent.analyzers import analyze_python, analyze_js_ts, Issue
-    from cq_agent.metrics.metrics import detect_near_duplicates, detect_docs_tests_hints
-    from cq_agent.scoring.score import prioritize_issues
-    from cq_agent.graph.deps import build_dependency_graph, compute_hotspots
-    from cq_agent.reporting.markdown import build_markdown_text
-    from cq_agent.autofix.auto import compute_autofixes, generate_patch, apply_edits
-except ImportError:
-    # Fallback to direct imports if cq_agent package not found
-    from ingestion import load_repo
-    from analyzers import analyze_python, analyze_js_ts, Issue
-    from metrics.metrics import detect_near_duplicates, detect_docs_tests_hints
-    from scoring.score import prioritize_issues
-    from graph.deps import build_dependency_graph, compute_hotspots
-    from reporting.markdown import build_markdown_text
-    from autofix.auto import compute_autofixes, generate_patch, apply_edits
-# Try importing remaining modules with cq_agent prefix first, fallback to direct imports
-try:
-    from cq_agent.web.components import (
-        create_metrics_cards, create_severity_chart, create_hotspots_chart,
-        create_trend_chart, create_language_distribution_chart, create_quality_score_gauge
-    )
-    from cq_agent.visualizations.advanced_deps import create_advanced_dependency_visualizations
-    from cq_agent.visualizations.hotspots import create_hotspot_visualizations
-    from cq_agent.visualizations.trends import create_trend_visualizations
-    from cq_agent.agents.langgraph_trends import create_langgraph_trend_analysis
-    from cq_agent.qa.index import build_index as build_tfidf_index
-    from cq_agent.qa.index import save_index as save_tfidf_index
-    from cq_agent.qa.index import load_index as load_tfidf_index
-    from cq_agent.qa.index import _repo_head_key
-    from cq_agent.analyzers.python_analyzers import run_ruff_on_files, run_bandit_on_paths
-    from cq_agent.ai import enhance_issues_with_ai, answer_codebase_question
-    try:
-        from cq_agent.ai.agent_qa import run_agentic_qa
-    except Exception:
-        run_agentic_qa = None
-except ImportError:
-    # Fallback to direct imports if cq_agent package not found
-    from web.components import (
-        create_metrics_cards, create_severity_chart, create_hotspots_chart,
-        create_trend_chart, create_language_distribution_chart, create_quality_score_gauge
-    )
-    from visualizations.advanced_deps import create_advanced_dependency_visualizations
-    from visualizations.hotspots import create_hotspot_visualizations
-    from visualizations.trends import create_trend_visualizations
-    from agents.langgraph_trends import create_langgraph_trend_analysis
-    from qa.index import build_index as build_tfidf_index
-    from qa.index import save_index as save_tfidf_index
-    from qa.index import load_index as load_tfidf_index
-    from qa.index import _repo_head_key
-    from analyzers.python_analyzers import run_ruff_on_files, run_bandit_on_paths
-    from ai import enhance_issues_with_ai, answer_codebase_question
-    try:
-        from ai.agent_qa import run_agentic_qa
-    except Exception:
-        run_agentic_qa = None
+    run_agentic_qa = _remaining_modules['ai_agent_qa'].run_agentic_qa
+except (ImportError, AttributeError):
+    run_agentic_qa = None
 
 
 # Helper: render a widget safely so one error doesn't break the whole page
