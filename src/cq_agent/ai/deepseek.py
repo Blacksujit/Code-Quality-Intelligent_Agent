@@ -11,6 +11,12 @@ from dataclasses import dataclass
 from random import uniform
 from typing import Optional, List, Dict, Any
 
+# Add logger
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
 
 @dataclass
 class DeepSeekResponse:
