@@ -487,18 +487,28 @@ class TrendAnalyzer:
             xaxis_title='Date & Time',
             yaxis_title='Quality Score',
             hovermode='x unified',
-            font=dict(size=12, family="Inter, sans-serif", color='#2c3e50'),
+            font=dict(size=12, family="Inter, sans-serif", color='#1a1a1a'),
             height=450,
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            margin=dict(l=50, r=50, t=80, b=50),
+            showlegend=True,
+            shapes=[
+                dict(
+                    type="rect",
+                    xref="paper", yref="paper",
+                    x0=0, y0=0, x1=1, y1=1,
+                    line=dict(color="rgba(128,128,128,0.3)", width=1),
+                )
+            ],
             xaxis=dict(
                 tickformat='%Y-%m-%d %I:%M %p',  # 12-hour format
                 tickangle=45,
-                gridcolor='rgba(128,128,128,0.2)',
+                gridcolor='rgba(128,128,128,0.5)',
                 showgrid=True
             ),
             yaxis=dict(
-                gridcolor='rgba(128,128,128,0.2)',
+                gridcolor='rgba(128,128,128,0.5)',
                 showgrid=True,
                 range=[0, 1]  # Quality score range
             ),
@@ -552,18 +562,28 @@ class TrendAnalyzer:
             title='🔥 Live Commit Activity Heatmap',
             xaxis_title='Date & Time',
             yaxis_title='',
-            font=dict(size=12, family="Inter, sans-serif", color='#2c3e50'),
+            font=dict(size=12, family="Inter, sans-serif", color='#1a1a1a'),
             height=250,
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            margin=dict(l=50, r=50, t=80, b=50),
+            showlegend=True,
+            shapes=[
+                dict(
+                    type="rect",
+                    xref="paper", yref="paper",
+                    x0=0, y0=0, x1=1, y1=1,
+                    line=dict(color="rgba(128,128,128,0.3)", width=1),
+                )
+            ],
             xaxis=dict(
                 tickformat='%Y-%m-%d %I:%M %p',  # 12-hour format
                 tickangle=45,
-                gridcolor='rgba(128,128,128,0.2)',
+                gridcolor='rgba(128,128,128,0.5)',
                 showgrid=True
             ),
             yaxis=dict(
-                gridcolor='rgba(128,128,128,0.2)',
+                gridcolor='rgba(128,128,128,0.5)',
                 showgrid=True
             ),
             hoverlabel=dict(
@@ -635,18 +655,28 @@ class TrendAnalyzer:
             xaxis_title='Date & Time',
             yaxis_title='Lines of Code',
             hovermode='x unified',
-            font=dict(size=12, family="Inter, sans-serif", color='#2c3e50'),
+            font=dict(size=12, family="Inter, sans-serif", color='#1a1a1a'),
             height=450,
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            margin=dict(l=50, r=50, t=80, b=50),
+            showlegend=True,
+            shapes=[
+                dict(
+                    type="rect",
+                    xref="paper", yref="paper",
+                    x0=0, y0=0, x1=1, y1=1,
+                    line=dict(color="rgba(128,128,128,0.3)", width=1),
+                )
+            ],
             xaxis=dict(
                 tickformat='%Y-%m-%d %I:%M %p',  # 12-hour format
                 tickangle=45,
-                gridcolor='rgba(128,128,128,0.2)',
+                gridcolor='rgba(128,128,128,0.5)',
                 showgrid=True
             ),
             yaxis=dict(
-                gridcolor='rgba(128,128,128,0.2)',
+                gridcolor='rgba(128,128,128,0.5)',
                 showgrid=True
             ),
             hoverlabel=dict(
