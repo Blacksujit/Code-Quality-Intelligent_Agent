@@ -59,7 +59,7 @@
 #### **📱 Access Options:**
 
 - **🎥 YouTube**: [Watch on YouTube](https://youtu.be/pa7KMkA-bxI)
-- **📺 Direct Link**: [Direct Video Access](scoming soon ...)
+- **📺 Live Link of project**: [Live Link Access](scoming soon ...)
 - **📱 Mobile Friendly**: Optimized for mobile viewing
 - **⏯️ Playback Controls**: Pause, rewind, and speed control
 
