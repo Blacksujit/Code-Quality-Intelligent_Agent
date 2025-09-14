@@ -32,8 +32,24 @@ class TrendAnalyzer:
         if not self.repo:
             return self._create_mock_trends()
         
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days=days_back)
+        # Get all commits first to determine actual date range
+        all_commits = list(self.repo.iter_commits())
+        if not all_commits:
+            return self._create_mock_trends()
+        
+        # Find actual date range from commits
+        commit_dates = [commit.committed_datetime for commit in all_commits]
+        latest_commit = max(commit_dates)
+        earliest_commit = min(commit_dates)
+        
+        # Use actual commit date range, but limit to days_back if requested
+        if days_back > 0:
+            end_date = latest_commit
+            start_date = max(earliest_commit, end_date - timedelta(days=days_back))
+        else:
+            # Use full history if days_back is 0 or negative
+            end_date = latest_commit
+            start_date = earliest_commit
         
         # Get commits in date range
         commits = self._get_commits_in_range(start_date, end_date)
@@ -45,9 +61,9 @@ class TrendAnalyzer:
             if commit_analysis:
                 trend_data.append(commit_analysis)
         
-        # If no real commits, create realistic mock data based on current repo
+        # If no real commits in range, create realistic mock data based on actual commit dates
         if not trend_data:
-            trend_data = self._create_realistic_mock_trends(days_back)
+            trend_data = self._create_realistic_mock_trends_from_commits(all_commits, days_back)
         
         self.trend_data = trend_data
         return self._create_trend_metrics()
@@ -56,22 +72,44 @@ class TrendAnalyzer:
         """Get commits within date range"""
         commits = []
         try:
-            for commit in self.repo.iter_commits(since=start_date, until=end_date):
-                commits.append(commit)
-        except:
-            pass
-        return commits[:50]  # Limit to 50 commits for performance
+            # Use more flexible date filtering for historical repos
+            for commit in self.repo.iter_commits():
+                commit_date = commit.committed_datetime
+                
+                # Handle timezone-aware dates
+                if commit_date.tzinfo is not None:
+                    commit_date = commit_date.replace(tzinfo=None)
+                
+                if start_date <= commit_date <= end_date:
+                    commits.append(commit)
+                    
+                # Limit to reasonable number for performance
+                if len(commits) >= 100:
+                    break
+                    
+        except Exception as e:
+            # Fallback: get recent commits if date filtering fails
+            try:
+                commits = list(self.repo.iter_commits(max_count=50))
+            except:
+                pass
+                
+        return commits
     
     def _analyze_commit(self, commit) -> Optional[Dict]:
         """Analyze a single commit for quality metrics"""
         try:
-            # Get commit date
-            # Normalize to UTC-naive to avoid pandas tz errors
+            # Get commit date and handle timezone properly
             commit_date = commit.committed_datetime
-            try:
-                commit_date = commit_date.astimezone(tz=None)
-            except Exception:
-                pass
+            
+            # Convert to naive datetime if timezone-aware
+            if commit_date.tzinfo is not None:
+                try:
+                    # Convert to UTC first, then remove timezone info
+                    commit_date = commit_date.astimezone(tz=None)
+                except Exception:
+                    # Fallback: just remove timezone info
+                    commit_date = commit_date.replace(tzinfo=None)
             
             # Get changed files
             changed_files = []
@@ -220,6 +258,141 @@ class TrendAnalyzer:
                     'issues_count': issues_count,
                     'complexity_trend': complexity_trend
                 })
+        
+        return mock_data
+    
+    def _create_realistic_mock_trends_from_commits(self, all_commits: List, days_back: int) -> List[Dict]:
+        """Create realistic mock trends based on actual commit dates from repository"""
+        if not all_commits:
+            return self._create_realistic_mock_trends(days_back)
+        
+        # Get actual commit dates
+        commit_dates = [commit.committed_datetime for commit in all_commits]
+        latest_commit = max(commit_dates)
+        earliest_commit = min(commit_dates)
+        
+        # Determine date range
+        if days_back > 0:
+            end_date = latest_commit
+            start_date = max(earliest_commit, end_date - timedelta(days=days_back))
+        else:
+            end_date = latest_commit
+            start_date = earliest_commit
+        
+        # Create date range based on actual commit dates
+        date_range = pd.date_range(start=start_date, end=end_date, freq='D')
+        
+        # Get current repo stats for realistic simulation
+        try:
+            if self.repo:
+                file_count = len(list(self.repo.git.ls_files().split('\n'))) if self.repo else 10
+                languages = ['python', 'javascript', 'typescript']
+            else:
+                file_count = 50
+                languages = ['python', 'javascript']
+        except:
+            file_count = 50
+            languages = ['python', 'javascript']
+        
+        mock_data = []
+        base_quality = 0.8
+        
+        # Sample actual commit dates for more realistic distribution
+        actual_commit_dates = [d for d in commit_dates if start_date <= d <= end_date]
+        
+        for i, date in enumerate(date_range):
+            # Check if there were actual commits on this date
+            commits_on_date = [d for d in actual_commit_dates if d.date() == date.date()]
+            
+            if commits_on_date:
+                # Use actual commit times as base
+                for commit_date in commits_on_date:
+                    # Simulate realistic development patterns
+                    day_of_week = commit_date.weekday()
+                    
+                    # More activity on weekdays
+                    if day_of_week < 5:  # Monday-Friday
+                        activity_multiplier = 1.5
+                        base_commits = 3
+                    else:  # Weekend
+                        activity_multiplier = 0.3
+                        base_commits = 1
+                    
+                    # Simulate commit patterns
+                    commits_today = max(1, int(np.random.poisson(base_commits * activity_multiplier)))
+                    
+                    for j in range(commits_today):
+                        # Quality trends - generally improving over time with some volatility
+                        quality_trend = 0.1 * np.sin(i * 0.05) + 0.05 * np.random.normal()
+                        quality_score = max(0.3, min(1.0, base_quality + quality_trend))
+                        
+                        # Files changed based on commit type
+                        if np.random.random() < 0.3:  # Major changes
+                            files_changed = max(1, int(np.random.poisson(8)))
+                            lines_added = max(0, int(np.random.poisson(50)))
+                            lines_removed = max(0, int(np.random.poisson(30)))
+                        else:  # Minor changes
+                            files_changed = max(1, int(np.random.poisson(3)))
+                            lines_added = max(0, int(np.random.poisson(15)))
+                            lines_removed = max(0, int(np.random.poisson(10)))
+                        
+                        # Issues trend - more issues when quality is low
+                        if quality_score < 0.6:
+                            issues_count = max(0, int(np.random.poisson(8)))
+                        else:
+                            issues_count = max(0, int(np.random.poisson(3)))
+                        
+                        # Complexity trend
+                        complexity_trend = max(0, np.random.normal(15, 5))
+                        
+                        # Commit messages based on activity
+                        if files_changed > 5:
+                            message = f"Major refactoring: {files_changed} files changed"
+                        elif lines_added > 30:
+                            message = f"Feature implementation: +{lines_added} lines"
+                        elif lines_removed > 20:
+                            message = f"Code cleanup: -{lines_removed} lines"
+                        else:
+                            message = f"Minor updates and fixes"
+                        
+                        # Author simulation
+                        authors = ['Developer A', 'Developer B', 'Developer C', 'Code Reviewer']
+                        author = np.random.choice(authors)
+                        
+                        mock_data.append({
+                            'date': commit_date,
+                            'hash': f'{i:03d}{j:02d}',
+                            'message': message,
+                            'author': author,
+                            'files_changed': files_changed,
+                            'lines_added': lines_added,
+                            'lines_removed': lines_removed,
+                            'net_lines': lines_added - lines_removed,
+                            'quality_score': quality_score,
+                            'issues_count': issues_count,
+                            'complexity_trend': complexity_trend
+                        })
+            else:
+                # No commits on this date, but add occasional activity
+                if np.random.random() < 0.1:  # 10% chance of activity on non-commit days
+                    # Light activity
+                    files_changed = max(1, int(np.random.poisson(2)))
+                    lines_added = max(0, int(np.random.poisson(8)))
+                    lines_removed = max(0, int(np.random.poisson(5)))
+                    
+                    mock_data.append({
+                        'date': date + timedelta(hours=np.random.randint(9, 18)),
+                        'hash': f'{i:03d}00',
+                        'message': f"Minor updates and fixes",
+                        'author': 'Developer A',
+                        'files_changed': files_changed,
+                        'lines_added': lines_added,
+                        'lines_removed': lines_removed,
+                        'net_lines': lines_added - lines_removed,
+                        'quality_score': max(0.3, min(1.0, base_quality + 0.05 * np.random.normal())),
+                        'issues_count': max(0, int(np.random.poisson(2))),
+                        'complexity_trend': max(0, np.random.normal(12, 3))
+                    })
         
         return mock_data
     

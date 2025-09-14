@@ -1039,7 +1039,7 @@ if repo_summary is not None and issues_df is not None:
 			_safe_render("language distribution chart", create_language_distribution_chart, repo_summary)
 		with c4:
 			st.markdown("#### 📈 Quality Trends")
-			_safe_render("quality trends chart", create_trend_chart, filtered)
+			_safe_render("quality trends chart", create_trend_chart, filtered, st.session_state.repo)
 
 	with tabs[1]:
 		st.markdown("### ⚠️ Issue Management")
