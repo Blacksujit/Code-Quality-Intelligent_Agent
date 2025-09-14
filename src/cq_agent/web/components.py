@@ -289,18 +289,6 @@ def create_trend_chart(issues_df: pd.DataFrame, repo_path: str = None) -> None:
             tickformat='%Y-%m-%d %I:%M %p',  # 12-hour format
             tickangle=45
         ),
-        plot_bgcolor='white',
-        paper_bgcolor='white',
-        margin=dict(l=50, r=50, t=80, b=50),
-        showlegend=True,
-        shapes=[
-            dict(
-                type="rect",
-                xref="paper", yref="paper",
-                x0=0, y0=0, x1=1, y1=1,
-                line=dict(color="rgba(128,128,128,0.3)", width=1),
-            )
-        ],
         hoverlabel=dict(
             bgcolor='#2c3e50',  # Dark background
             font_size=12,
