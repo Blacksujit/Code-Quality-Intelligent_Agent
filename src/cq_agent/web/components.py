@@ -290,9 +290,11 @@ def create_trend_chart(issues_df: pd.DataFrame, repo_path: str = None) -> None:
             tickangle=45
         ),
         hoverlabel=dict(
-            bgcolor="white",
+            bgcolor='#2c3e50',  # Dark background
             font_size=12,
-            font_family="Inter, sans-serif"
+            font_family="Inter, sans-serif",
+            font_color='white',  # White text
+            bordercolor='#34495e'
         )
     )
     

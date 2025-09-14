@@ -457,9 +457,12 @@ class TrendAnalyzer:
                 x=df['date'],
                 y=df['quality_score'],
                 mode='lines+markers',
-                name='Quality Score',
-                line=dict(color='#2E8B57', width=3),
-                marker=dict(size=6)
+                name='🎯 Quality Score',
+                line=dict(color='#00d4aa', width=4, shape='spline'),
+                marker=dict(size=8, color='#00d4aa', symbol='circle'),
+                fill='tozeroy',
+                fillcolor='rgba(0, 212, 170, 0.2)',
+                hovertemplate='<b>📅 Date:</b> %{x}<br><b>🎯 Quality Score:</b> %{y:.2f}<br><extra></extra>'
             ))
         
         # Add moving average
@@ -474,8 +477,9 @@ class TrendAnalyzer:
                 x=df['date'],
                 y=df['quality_ma'],
                 mode='lines',
-                name='7-Day Moving Average',
-                line=dict(color='#FF6B6B', width=2, dash='dash')
+                name='📈 7-Day Moving Average',
+                line=dict(color='#ff6b6b', width=3, dash='dash', shape='spline'),
+                hovertemplate='<b>📅 Date:</b> %{x}<br><b>📈 7-Day Avg:</b> %{y:.2f}<br><extra></extra>'
             ))
         
         fig.update_layout(
@@ -483,16 +487,34 @@ class TrendAnalyzer:
             xaxis_title='Date & Time',
             yaxis_title='Quality Score',
             hovermode='x unified',
-            font=dict(size=12, family="Inter, sans-serif"),
-            height=400,
+            font=dict(size=12, family="Inter, sans-serif", color='#2c3e50'),
+            height=450,
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
             xaxis=dict(
                 tickformat='%Y-%m-%d %I:%M %p',  # 12-hour format
-                tickangle=45
+                tickangle=45,
+                gridcolor='rgba(128,128,128,0.2)',
+                showgrid=True
+            ),
+            yaxis=dict(
+                gridcolor='rgba(128,128,128,0.2)',
+                showgrid=True,
+                range=[0, 1]  # Quality score range
             ),
             hoverlabel=dict(
-                bgcolor="white",
+                bgcolor='#2c3e50',  # Dark background
                 font_size=12,
-                font_family="Inter, sans-serif"
+                font_family="Inter, sans-serif",
+                font_color='white',  # White text
+                bordercolor='#34495e'
+            ),
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
             )
         )
         
@@ -530,23 +552,33 @@ class TrendAnalyzer:
             title='🔥 Live Commit Activity Heatmap',
             xaxis_title='Date & Time',
             yaxis_title='',
-            font=dict(size=12, family="Inter, sans-serif"),
-            height=200,
+            font=dict(size=12, family="Inter, sans-serif", color='#2c3e50'),
+            height=250,
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
             xaxis=dict(
                 tickformat='%Y-%m-%d %I:%M %p',  # 12-hour format
-                tickangle=45
+                tickangle=45,
+                gridcolor='rgba(128,128,128,0.2)',
+                showgrid=True
+            ),
+            yaxis=dict(
+                gridcolor='rgba(128,128,128,0.2)',
+                showgrid=True
             ),
             hoverlabel=dict(
-                bgcolor="white",
+                bgcolor='#2c3e50',  # Dark background
                 font_size=12,
-                font_family="Inter, sans-serif"
+                font_family="Inter, sans-serif",
+                font_color='white',  # White text
+                bordercolor='#34495e'
             )
         )
         
         return fig
     
     def create_lines_changed_chart(self) -> go.Figure:
-        """Create lines added/removed chart"""
+        """Create beautiful lines added/removed chart with proper styling"""
         if not self.trend_data:
             return go.Figure()
         
@@ -557,46 +589,79 @@ class TrendAnalyzer:
                 df['date'] = df['date'].dt.tz_localize(None)
             except Exception:
                 pass
-        if 'date' in df.columns:
-            df['date'] = pd.to_datetime(df['date'], errors='coerce')
         
         fig = go.Figure()
         
-        # Lines added
+        # Lines added (Green) - Beautiful styling
         fig.add_trace(go.Scatter(
             x=df['date'],
             y=df['lines_added'],
             mode='lines+markers',
-            name='Lines Added',
-            line=dict(color='#28a745', width=2),
-            fill='tonexty'
+            name='➕ Lines Added',
+            line=dict(color='#00ff88', width=4, shape='spline'),
+            marker=dict(size=8, color='#00ff88', symbol='circle'),
+            fill='tozeroy',
+            fillcolor='rgba(0, 255, 136, 0.3)',
+            hovertemplate='<b>📅 Date:</b> %{x}<br><b>➕ Lines Added:</b> %{y}<br><extra></extra>'
         ))
         
-        # Lines removed
+        # Lines removed (Red) - Beautiful styling
         fig.add_trace(go.Scatter(
             x=df['date'],
             y=df['lines_removed'],
             mode='lines+markers',
-            name='Lines Removed',
-            line=dict(color='#dc3545', width=2),
-            fill='tozeroy'
+            name='➖ Lines Removed',
+            line=dict(color='#ff4757', width=4, shape='spline'),
+            marker=dict(size=8, color='#ff4757', symbol='circle'),
+            fill='tozeroy',
+            fillcolor='rgba(255, 71, 87, 0.3)',
+            hovertemplate='<b>📅 Date:</b> %{x}<br><b>➖ Lines Removed:</b> %{y}<br><extra></extra>'
         ))
         
+        # Add net lines change (Blue) - New feature
+        if 'net_lines' in df.columns:
+            fig.add_trace(go.Scatter(
+                x=df['date'],
+                y=df['net_lines'],
+                mode='lines+markers',
+                name='📊 Net Change',
+                line=dict(color='#3742fa', width=3, shape='spline', dash='dash'),
+                marker=dict(size=6, color='#3742fa', symbol='diamond'),
+                hovertemplate='<b>📅 Date:</b> %{x}<br><b>📊 Net Lines:</b> %{y}<br><extra></extra>'
+            ))
+        
         fig.update_layout(
-            title='📊 Live Lines Added vs Removed Over Time',
+            title='📊 Live Code Changes Over Time',
             xaxis_title='Date & Time',
             yaxis_title='Lines of Code',
             hovermode='x unified',
-            font=dict(size=12, family="Inter, sans-serif"),
-            height=400,
+            font=dict(size=12, family="Inter, sans-serif", color='#2c3e50'),
+            height=450,
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
             xaxis=dict(
                 tickformat='%Y-%m-%d %I:%M %p',  # 12-hour format
-                tickangle=45
+                tickangle=45,
+                gridcolor='rgba(128,128,128,0.2)',
+                showgrid=True
+            ),
+            yaxis=dict(
+                gridcolor='rgba(128,128,128,0.2)',
+                showgrid=True
             ),
             hoverlabel=dict(
-                bgcolor="white",
+                bgcolor='#2c3e50',  # Dark background
                 font_size=12,
-                font_family="Inter, sans-serif"
+                font_family="Inter, sans-serif",
+                font_color='white',  # White text
+                bordercolor='#34495e'
+            ),
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
             )
         )
         
@@ -634,9 +699,11 @@ class TrendAnalyzer:
             font=dict(size=12, family="Inter, sans-serif"),
             height=max(300, len(author_stats) * 40),
             hoverlabel=dict(
-                bgcolor="white",
+                bgcolor='#2c3e50',  # Dark background
                 font_size=12,
-                font_family="Inter, sans-serif"
+                font_family="Inter, sans-serif",
+                font_color='white',  # White text
+                bordercolor='#34495e'
             )
         )
         
