@@ -479,12 +479,21 @@ class TrendAnalyzer:
             ))
         
         fig.update_layout(
-            title='Code Quality Trends Over Time',
-            xaxis_title='Date',
+            title='📈 Live Code Quality Trends Over Time',
+            xaxis_title='Date & Time',
             yaxis_title='Quality Score',
             hovermode='x unified',
-            font=dict(size=12),
-            height=400
+            font=dict(size=12, family="Inter, sans-serif"),
+            height=400,
+            xaxis=dict(
+                tickformat='%Y-%m-%d %I:%M %p',  # 12-hour format
+                tickangle=45
+            ),
+            hoverlabel=dict(
+                bgcolor="white",
+                font_size=12,
+                font_family="Inter, sans-serif"
+            )
         )
         
         return fig
@@ -518,11 +527,20 @@ class TrendAnalyzer:
         ))
         
         fig.update_layout(
-            title='Commit Activity Heatmap',
-            xaxis_title='Date',
+            title='🔥 Live Commit Activity Heatmap',
+            xaxis_title='Date & Time',
             yaxis_title='',
-            font=dict(size=12),
-            height=200
+            font=dict(size=12, family="Inter, sans-serif"),
+            height=200,
+            xaxis=dict(
+                tickformat='%Y-%m-%d %I:%M %p',  # 12-hour format
+                tickangle=45
+            ),
+            hoverlabel=dict(
+                bgcolor="white",
+                font_size=12,
+                font_family="Inter, sans-serif"
+            )
         )
         
         return fig
@@ -565,12 +583,21 @@ class TrendAnalyzer:
         ))
         
         fig.update_layout(
-            title='Lines Added vs Removed Over Time',
-            xaxis_title='Date',
+            title='📊 Live Lines Added vs Removed Over Time',
+            xaxis_title='Date & Time',
             yaxis_title='Lines of Code',
             hovermode='x unified',
-            font=dict(size=12),
-            height=400
+            font=dict(size=12, family="Inter, sans-serif"),
+            height=400,
+            xaxis=dict(
+                tickformat='%Y-%m-%d %I:%M %p',  # 12-hour format
+                tickangle=45
+            ),
+            hoverlabel=dict(
+                bgcolor="white",
+                font_size=12,
+                font_family="Inter, sans-serif"
+            )
         )
         
         return fig
@@ -601,11 +628,16 @@ class TrendAnalyzer:
         ])
         
         fig.update_layout(
-            title='Developer Activity - Files Changed',
+            title='👥 Live Developer Activity - Files Changed',
             xaxis_title='Files Changed',
             yaxis_title='Developer',
-            font=dict(size=12),
-            height=max(300, len(author_stats) * 40)
+            font=dict(size=12, family="Inter, sans-serif"),
+            height=max(300, len(author_stats) * 40),
+            hoverlabel=dict(
+                bgcolor="white",
+                font_size=12,
+                font_family="Inter, sans-serif"
+            )
         )
         
         return fig
