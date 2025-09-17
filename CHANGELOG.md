@@ -14,6 +14,7 @@
 - Licensing: added MIT `LICENSE` (2025).
 
 ### Notable Commits
+
 - Fix graph visibility and contrast issues
 - Restore red/green lines visualization and fix hover visibility
 - Fix timestamp accuracy in trends and visualizations
