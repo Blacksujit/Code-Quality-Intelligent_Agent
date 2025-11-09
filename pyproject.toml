@@ -31,4 +31,4 @@ local_llm = [
 ]
 
 [project.scripts]
-cq-agent = "cq_agent.cli.main:main"
+cq-agent = "cq_agent.cli.__main__:main"

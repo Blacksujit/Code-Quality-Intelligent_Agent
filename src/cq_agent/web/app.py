@@ -282,8 +282,19 @@ if '_repo_head_key' not in globals():
     def _repo_head_key(repo):
         """Fallback function for _repo_head_key"""
         try:
-            return repo.head.commit.hexsha[:8]
-        except:
+            # Try to get git commit hash
+            if hasattr(repo, 'head') and hasattr(repo.head, 'commit'):
+                return repo.head.commit.hexsha[:8]
+            # Try alternative: check if repo has git info
+            if isinstance(repo, dict) and 'git' in repo:
+                git_info = repo.get('git', {})
+                if isinstance(git_info, dict) and 'head' in git_info:
+                    return str(git_info['head'])[:8]
+            # Fallback to hash of repo path or timestamp
+            import hashlib
+            repo_str = str(repo) if not isinstance(repo, dict) else str(repo.get('root', 'unknown'))
+            return hashlib.md5(repo_str.encode()).hexdigest()[:8]
+        except Exception:
             return "unknown"
 
 
@@ -693,7 +704,15 @@ with st.sidebar:
 	)
 	
 	default_path = str(Path.cwd())
-	path = st.text_input("📁 Repository Path", value=default_path, help="Enter the path to your code repository")
+	path = st.text_input(
+		"📁 Repository Path", 
+		value=default_path, 
+		help="Enter the path to your code repository (single path only, no spaces or multiple paths)"
+	)
+	
+	# Clean the path input immediately
+	if path:
+		path = path.strip()
 	max_files = st.number_input("📊 Max Files to Scan", min_value=50, max_value=10000, value=2000, step=50, help="Limit files for faster analysis on large repos")
 	fast_mode = st.checkbox("⚡ Fast scan (large repos)", value=True, help="Skips heavy linters and samples files to speed up very large codebases")
 	clear_cache_btn = st.button("🧹 Clear Analysis Cache", use_container_width=True)
@@ -755,9 +774,32 @@ with st.sidebar:
 	)
 
 # Analysis function cached to avoid recomputation on rerun
-	@st.cache_data(show_spinner=False)
-	def run_analysis_cached(path_str: str, max_files_int: int, fast: bool):
+@st.cache_data(show_spinner=False)
+def run_analysis_cached(path_str: str, max_files_int: int, fast: bool):
+		# Clean and validate path input (same logic as streaming function)
+		path_str = path_str.strip()
+		if ' ' in path_str:
+			parts = path_str.split()
+			valid_path = None
+			for part in parts:
+				part = part.strip()
+				if part:
+					test_path = Path(part).expanduser()
+					if test_path.exists():
+						valid_path = part
+						break
+					if len(part) >= 2 and part[1] == ':' and part[0].isalpha():
+						valid_path = part
+						break
+			if valid_path:
+				path_str = valid_path
+			else:
+				path_str = parts[0].strip() if parts else path_str
+		
 		root = Path(path_str).expanduser().resolve()
+		if not root.exists():
+			raise FileNotFoundError(f"Path not found: {root}")
+		
 		# In fast mode, cap files and skip heavy external linters
 		effective_max = int(max_files_int)
 		if fast:
@@ -783,13 +825,18 @@ with st.sidebar:
 
 		# Fast mode: targeted linting using priority sampling and cached TF-IDF index
 		if fast:
-			# Build/load TF-IDF index cache
-			cache_dir = Path.home() / ".cq_agent_cache"
-			key = _repo_head_key(repo)
-			index = load_tfidf_index(cache_dir, key)
-			if index is None:
-				index = build_tfidf_index(repo, max_files=1200)
-				save_tfidf_index(index, cache_dir, key)
+			# Build/load TF-IDF index cache (only if functions are available)
+			if 'load_tfidf_index' in globals() and 'build_tfidf_index' in globals() and 'save_tfidf_index' in globals():
+				try:
+					cache_dir = Path.home() / ".cq_agent_cache"
+					key = _repo_head_key(repo) if '_repo_head_key' in globals() else "default"
+					index = load_tfidf_index(cache_dir, key)
+					if index is None:
+						index = build_tfidf_index(repo, max_files=1200)
+						save_tfidf_index(index, cache_dir, key)
+				except Exception:
+					# If TF-IDF indexing fails, continue without it
+					index = None
 
 			# Priority sampling: churn, simple degree (in+out) on dict-graph, SLOC
 			from collections import defaultdict as _dd
@@ -809,128 +856,196 @@ with st.sidebar:
 			budget = min(200, max(50, int(effective_max * 0.25)))
 			priority_files = [f for f, _ in sorted(file_scores.items(), key=lambda x: x[1], reverse=True)[:budget]]
 
-			# Targeted Python security/style
+			# Targeted Python security/style (only if functions are available)
 			py_files = [f for f in priority_files if f.endswith(".py")]
 			if py_files:
-				issues.extend(run_ruff_on_files(root, py_files))
-				issues.extend(run_bandit_on_paths(root, py_files))
+				try:
+					if 'run_ruff_on_files' in globals():
+						issues.extend(run_ruff_on_files(root, py_files))
+					if 'run_bandit_on_paths' in globals():
+						issues.extend(run_bandit_on_paths(root, py_files))
+				except Exception:
+					# If linting fails, continue without it
+					pass
 				if issues:
 					issues = prioritize_issues(issues)
 		return root, repo, issues, hotspots
 
-	# Streaming analysis with progress updates
-	def run_analysis_streaming(path_str: str, max_files_int: int, fast: bool, use_deepseek: bool = False, use_local_llm: bool = False):
-		"""Run analysis with progress streaming and partial result updates."""
-		root = Path(path_str).expanduser().resolve()
-		effective_max = int(max_files_int)
-		if fast:
-			effective_max = min(effective_max, 800)
+# Streaming analysis with progress updates
+def run_analysis_streaming(path_str: str, max_files_int: int, fast: bool, use_deepseek: bool = False, use_local_llm: bool = False):
+	"""Run analysis with progress streaming and partial result updates."""
+	# Clean and validate path input
+	# Remove leading/trailing whitespace and handle cases where multiple paths might be entered
+	path_str = path_str.strip()
+	
+	# If path contains spaces and looks like multiple paths, take the first valid one
+	# or the one that looks like an absolute path
+	if ' ' in path_str:
+		# Split by space and find the first valid path
+		parts = path_str.split()
+		valid_path = None
+		valid_path_found = False
 		
-		# Progress tracking
-		progress_bar = st.progress(0)
-		status_text = st.empty()
+		# First pass: find any path that actually exists
+		for part in parts:
+			part = part.strip()
+			if part:
+				test_path = Path(part).expanduser().resolve()
+				if test_path.exists():
+					valid_path = part
+					valid_path_found = True
+					break
 		
-		# Step 1: Repository ingestion
-		status_text.text("📁 Loading repository...")
-		progress_bar.progress(10)
-		repo = load_repo(str(root), max_files=effective_max)
+		# Second pass: if no existing path, look for absolute Windows paths
+		if not valid_path_found:
+			for part in parts:
+				part = part.strip()
+				if part and len(part) >= 2 and part[1] == ':' and part[0].isalpha():
+					valid_path = part
+					break
 		
-		# Step 2: Basic analysis
-		status_text.text("🔍 Running code analysis...")
-		progress_bar.progress(30)
-		issues: list[Issue] = []
-		if not fast:
-			if "python" in repo["languages"]:
-				issues.extend(analyze_python(root))
-			if any(lang in repo["languages"] for lang in ("javascript", "typescript")):
-				issues.extend(analyze_js_ts(root))
-		
-		# Step 3: Heuristics and prioritization
-		status_text.text("🧠 Computing heuristics...")
-		progress_bar.progress(50)
-		issues.extend(detect_near_duplicates(repo))
-		issues.extend(detect_docs_tests_hints(repo))
-		if issues:
-			issues = prioritize_issues(issues)
-		
-		# Step 4: Graph analysis
-		status_text.text("📊 Building dependency graph...")
-		progress_bar.progress(70)
-		graph = build_dependency_graph(repo)
-		hotspots = compute_hotspots(repo, graph)
-		
-		# Step 5: Fast mode enhancements
-		if fast:
-			status_text.text("⚡ Fast mode: Priority sampling...")
-			progress_bar.progress(85)
-			# Fast mode logic (same as cached version)
-			cache_dir = Path.home() / ".cq_agent_cache"
-			key = _repo_head_key(repo)
-			index = load_tfidf_index(cache_dir, key)
-			if index is None:
-				index = build_tfidf_index(repo, max_files=1200)
-				save_tfidf_index(index, cache_dir, key)
-			
-			from collections import defaultdict as _dd
-			in_degree: dict[str, int] = _dd(int)
-			for src, deps in graph.items():
-				for dst in deps:
-					in_degree[dst] += 1
-			file_scores: dict[str, float] = {}
-			churn = repo.get("git", {}).get("churn_by_file", {}) if isinstance(repo.get("git", {}), dict) else {}
-			for f, rec in repo.get("files", {}).items():
-				out_deg = len(graph.get(f, set()))
-				deg = int(out_deg) + int(in_degree.get(f, 0))
-				sloc = rec.get("sloc", 0)
-				ch = churn.get(f, 0)
-				file_scores[f] = 0.5 * deg + 0.3 * (sloc ** 0.5) + 0.2 * ch
-			budget = min(200, max(50, int(effective_max * 0.25)))
-			priority_files = [f for f, _ in sorted(file_scores.items(), key=lambda x: x[1], reverse=True)[:budget]]
-			py_files = [f for f in priority_files if f.endswith(".py")]
-			if py_files:
-				issues.extend(run_ruff_on_files(root, py_files))
-				issues.extend(run_bandit_on_paths(root, py_files))
-				if issues:
-					issues = prioritize_issues(issues)
-		
-		# Step 6: AI enhancement (if enabled)
-		if use_deepseek and st.session_state.get("deepseek_api_key"):
-			status_text.text("🤖 Enhancing with DeepSeek AI...")
-			progress_bar.progress(95)
+		if valid_path:
+			path_str = valid_path
+		else:
+			# If no valid path found, use the first part
+			path_str = parts[0].strip() if parts else path_str
+	
+	root = Path(path_str).expanduser().resolve()
+	
+	# Validate path exists before proceeding
+	if not root.exists():
+		raise FileNotFoundError(
+			f"Path not found: {root}\n\n"
+			f"Please check:\n"
+			f"1. The path is correct: {path_str}\n"
+			f"2. The directory exists\n"
+			f"3. You have read permissions\n"
+			f"4. Remove any extra spaces or multiple paths"
+		)
+	
+	effective_max = int(max_files_int)
+	if fast:
+		effective_max = min(effective_max, 800)
+	
+	# Progress tracking
+	progress_bar = st.progress(0)
+	status_text = st.empty()
+	
+	# Step 1: Repository ingestion
+	status_text.text("📁 Loading repository...")
+	progress_bar.progress(10)
+	repo = load_repo(str(root), max_files=effective_max)
+	
+	# Step 2: Basic analysis
+	status_text.text("🔍 Running code analysis...")
+	progress_bar.progress(30)
+	issues: list[Issue] = []
+	if not fast:
+		if "python" in repo["languages"]:
+			issues.extend(analyze_python(root))
+		if any(lang in repo["languages"] for lang in ("javascript", "typescript")):
+			issues.extend(analyze_js_ts(root))
+	
+	# Step 3: Heuristics and prioritization
+	status_text.text("🧠 Computing heuristics...")
+	progress_bar.progress(50)
+	issues.extend(detect_near_duplicates(repo))
+	issues.extend(detect_docs_tests_hints(repo))
+	if issues:
+		issues = prioritize_issues(issues)
+	
+	# Step 4: Graph analysis
+	status_text.text("📊 Building dependency graph...")
+	progress_bar.progress(70)
+	graph = build_dependency_graph(repo)
+	hotspots = compute_hotspots(repo, graph)
+	
+	# Step 5: Fast mode enhancements
+	if fast:
+		status_text.text("⚡ Fast mode: Priority sampling...")
+		progress_bar.progress(85)
+		# Fast mode logic (same as cached version) - only if functions are available
+		if 'load_tfidf_index' in globals() and 'build_tfidf_index' in globals() and 'save_tfidf_index' in globals():
 			try:
+				cache_dir = Path.home() / ".cq_agent_cache"
+				key = _repo_head_key(repo) if '_repo_head_key' in globals() else "default"
+				index = load_tfidf_index(cache_dir, key)
+				if index is None:
+					index = build_tfidf_index(repo, max_files=1200)
+					save_tfidf_index(index, cache_dir, key)
+			except Exception:
+				# If TF-IDF indexing fails, continue without it
+				index = None
+		
+		from collections import defaultdict as _dd
+		in_degree: dict[str, int] = _dd(int)
+		for src, deps in graph.items():
+			for dst in deps:
+				in_degree[dst] += 1
+		file_scores: dict[str, float] = {}
+		churn = repo.get("git", {}).get("churn_by_file", {}) if isinstance(repo.get("git", {}), dict) else {}
+		for f, rec in repo.get("files", {}).items():
+			out_deg = len(graph.get(f, set()))
+			deg = int(out_deg) + int(in_degree.get(f, 0))
+			sloc = rec.get("sloc", 0)
+			ch = churn.get(f, 0)
+			file_scores[f] = 0.5 * deg + 0.3 * (sloc ** 0.5) + 0.2 * ch
+		budget = min(200, max(50, int(effective_max * 0.25)))
+		priority_files = [f for f, _ in sorted(file_scores.items(), key=lambda x: x[1], reverse=True)[:budget]]
+		py_files = [f for f in priority_files if f.endswith(".py")]
+		if py_files:
+			try:
+				if 'run_ruff_on_files' in globals():
+					issues.extend(run_ruff_on_files(root, py_files))
+				if 'run_bandit_on_paths' in globals():
+					issues.extend(run_bandit_on_paths(root, py_files))
+			except Exception:
+				# If linting fails, continue without it
+				pass
+			if issues:
+				issues = prioritize_issues(issues)
+	
+	# Step 6: AI enhancement (if enabled)
+	if use_deepseek and st.session_state.get("deepseek_api_key"):
+		status_text.text("🤖 Enhancing with DeepSeek AI...")
+		progress_bar.progress(95)
+		try:
+			if 'enhance_issues_with_ai' in globals() and callable(globals()['enhance_issues_with_ai']):
 				issues = enhance_issues_with_ai(issues, repo, st.session_state.deepseek_api_key)
-			except Exception as e:
-				st.warning(f"⚠️ AI enhancement failed: {e}")
-		elif use_local_llm and run_agentic_qa is not None:
-			status_text.text("🏠 Enhancing with Local LLM...")
-			progress_bar.progress(95)
-			try:
-				# Use local LLM for issue enhancement (simplified)
-				enhanced_issues = []
-				for issue in issues[:10]:  # Limit to top 10 for speed
-					try:
-						question = f"Analyze this {issue.get('source', 'code')} issue: {issue.get('title', '')}"
-						answer, _ = run_agentic_qa(question, repo, backend="local", model="microsoft/DialoGPT-small")
-						if answer and not answer.startswith("Extractive summary"):
-							issue = issue.copy()
-							issue['ai_justification'] = answer[:200] + "..." if len(answer) > 200 else answer
-							issue['ai_severity'] = issue.get('severity', 'medium')
-					except Exception:
-						pass
-					enhanced_issues.append(issue)
-				issues = enhanced_issues + issues[10:]  # Keep rest unchanged
-			except Exception as e:
-				st.warning(f"⚠️ Local LLM enhancement failed: {e}")
-		
-		# Complete
-		status_text.text("✅ Analysis complete!")
-		progress_bar.progress(100)
-		
-		# Clear progress indicators
-		progress_bar.empty()
-		status_text.empty()
-		
-		return root, repo, issues, hotspots
+			else:
+				st.warning("⚠️ AI enhancement not available")
+		except Exception as e:
+			st.warning(f"⚠️ AI enhancement failed: {e}")
+	elif use_local_llm and 'run_agentic_qa' in globals() and run_agentic_qa is not None:
+		status_text.text("🏠 Enhancing with Local LLM...")
+		progress_bar.progress(95)
+		try:
+			# Use local LLM for issue enhancement (simplified)
+			enhanced_issues = []
+			for issue in issues[:10]:  # Limit to top 10 for speed
+				try:
+					question = f"Analyze this {issue.get('source', 'code')} issue: {issue.get('title', '')}"
+					answer, _ = run_agentic_qa(question, repo, backend="local", model="microsoft/DialoGPT-small")
+					if answer and not answer.startswith("Extractive summary"):
+						issue = issue.copy()
+						issue['ai_justification'] = answer[:200] + "..." if len(answer) > 200 else answer
+						issue['ai_severity'] = issue.get('severity', 'medium')
+				except Exception:
+					pass
+				enhanced_issues.append(issue)
+			issues = enhanced_issues + issues[10:]  # Keep rest unchanged
+		except Exception as e:
+			st.warning(f"⚠️ Local LLM enhancement failed: {e}")
+	
+	# Complete
+	status_text.text("✅ Analysis complete!")
+	progress_bar.progress(100)
+	
+	# Clear progress indicators
+	progress_bar.empty()
+	status_text.empty()
+	
+	return root, repo, issues, hotspots
 
 # Trigger analysis
 if clear_cache_btn:
@@ -941,12 +1056,59 @@ if clear_cache_btn:
 		st.info("Cache already clear.")
 
 if run_clicked:
+	# Clean path one more time before using (defensive programming)
+	clean_path = path.strip() if path else ""
+	
+	# If path contains spaces, try to extract valid path
+	if ' ' in clean_path:
+		parts = clean_path.split()
+		valid_path_found = False
+		# First, try to find a path that actually exists
+		for part in parts:
+			part = part.strip()
+			if part:
+				test_path = Path(part).expanduser().resolve()
+				if test_path.exists():
+					clean_path = part
+					valid_path_found = True
+					break
+		
+		# If no existing path found, look for absolute Windows paths (drive letter format)
+		if not valid_path_found:
+			for part in parts:
+				part = part.strip()
+				if part and len(part) >= 2 and part[1] == ':' and part[0].isalpha():
+					clean_path = part
+					break
+		
+		# If still no valid path, use first part
+		if not valid_path_found and len(parts) > 0:
+			clean_path = parts[0].strip()
+	
+	# Validate path exists before calling analysis
+	if not clean_path:
+		st.error("❌ Please enter a repository path")
+		st.stop()
+	
+	test_root = Path(clean_path).expanduser().resolve()
+	if not test_root.exists():
+		st.error(f"❌ Path not found: {clean_path}\n\nPlease check:\n1. The path is correct\n2. The directory exists\n3. Remove any extra spaces or multiple paths")
+		st.stop()
+	
 	# Use streaming analysis for better UX
-	root, repo, issues, hotspots = run_analysis_streaming(
-		path, int(max_files), bool(fast_mode), 
-		use_deepseek=st.session_state.get("use_deepseek", False),
-		use_local_llm=st.session_state.get("use_local_llm", False)
-	)
+	try:
+		root, repo, issues, hotspots = run_analysis_streaming(
+			clean_path, int(max_files), bool(fast_mode), 
+			use_deepseek=st.session_state.get("use_deepseek", False),
+			use_local_llm=st.session_state.get("use_local_llm", False)
+		)
+	except FileNotFoundError as e:
+		st.error(f"❌ {str(e)}\n\n💡 Tip: Make sure you entered a single, valid path without extra spaces.")
+		st.stop()
+	except Exception as e:
+		st.error(f"❌ Error during analysis: {str(e)}")
+		st.exception(e)
+		st.stop()
 	
 	# Handle AI balance detection after streaming
 	if st.session_state.get("use_deepseek", False) and st.session_state.get("deepseek_api_key"):
@@ -960,11 +1122,11 @@ if run_clicked:
 	
 	st.session_state.root = root
 	st.session_state.repo = repo  # Store full repo data
-	st.session_state.repo_summary = repo["summary"] | {"languages": repo["languages"]}
+	st.session_state.repo_summary = repo.get("summary", {}) | {"languages": repo.get("languages", [])}
 	
 	# Create DataFrame with AI-enhanced columns if available
 	df_columns = ["severity", "category", "source", "file", "start_line", "title", "description"]
-	if issues and any("ai_severity" in issue for issue in issues):
+	if issues and any("ai_severity" in issue for issue in issues if isinstance(issue, dict)):
 		df_columns.extend(["ai_severity", "ai_justification", "ai_suggestions"])
 	
 	# Create DataFrame and only include columns that exist in the data
@@ -994,7 +1156,22 @@ if repo_summary is not None and issues_df is not None:
 	
 	# Add issue count to repo summary for components
 	repo_summary["issue_count"] = len(issues_df)
-	create_metrics_cards(repo_summary)
+	if 'create_metrics_cards' in globals() and callable(globals()['create_metrics_cards']):
+		try:
+			create_metrics_cards(repo_summary)
+		except Exception as e:
+			st.warning(f"Could not render metrics cards: {e}")
+	else:
+		# Fallback: show basic metrics
+		col1, col2, col3, col4 = st.columns(4)
+		with col1:
+			st.metric("Total Issues", len(issues_df))
+		with col2:
+			st.metric("Files Analyzed", repo_summary.get("file_count", 0))
+		with col3:
+			st.metric("Lines of Code", repo_summary.get("sloc", 0))
+		with col4:
+			st.metric("Languages", len(repo_summary.get("languages", [])))
 
 	tabs = st.tabs(["📊 Dashboards", "⚠️ Issues", "📁 File Details", "🔧 Autofix", "📤 Export", "🔗 Dependencies", "🔥 Hotspots", "📈 Trends", "🤖 AI Q&A"]) 
 
@@ -1567,11 +1744,17 @@ if repo_summary is not None and issues_df is not None:
 					try:
 						if st.session_state.get("use_deepseek", False):
 							# DeepSeek path
-							answer = answer_codebase_question(
-								question.strip(), 
-								st.session_state.repo, 
-								st.session_state.deepseek_api_key
-							)
+							if 'answer_codebase_question' in globals() and callable(globals()['answer_codebase_question']):
+								try:
+									answer = answer_codebase_question(
+										question.strip(), 
+										st.session_state.repo, 
+										st.session_state.deepseek_api_key
+									)
+								except Exception as e:
+									answer = f"Error: {str(e)}"
+							else:
+								answer = "AI backend not available"
 							# Handle insufficient balance gracefully
 							if "Insufficient Balance" in (answer or ""):
 								st.warning("🔑 DeepSeek: Insufficient balance. Switching to Local LLM fallback...")

@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import os
+import sys
 import warnings
+import argparse
+from pathlib import Path
 
 # Reduce noisy framework logs/warnings for a cleaner CLI UX
 os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")  # 0=all, 1=INFO off, 2=WARNING off, 3=ERROR off
@@ -27,62 +30,107 @@ try:
 except Exception:
 	pass
 
-import argparse
-import sys
-from pathlib import Path
-
-from cq_agent.ingestion import load_repo
-from cq_agent.analyzers import analyze_python, analyze_js_ts, Issue
-from cq_agent.metrics import detect_near_duplicates, detect_docs_tests_hints
-from cq_agent.scoring import prioritize_issues
-from cq_agent.reporting import write_markdown_report, write_sarif
-from cq_agent.graph import build_dependency_graph, compute_hotspots
-from cq_agent.qa import build_index
-from cq_agent.autofix import compute_autofixes, generate_patch, apply_edits
-from cq_agent.ai import enhance_issues_with_ai
-try:
-	from cq_agent.ai.deepseek import answer_codebase_question  # type: ignore
-except Exception:  # pragma: no cover
-	answer_codebase_question = None  # type: ignore
-try:
-	from cq_agent.ai.local_llm import answer_with_local_llm  # type: ignore
-except Exception:  # pragma: no cover
-	answer_with_local_llm = None  # type: ignore
-try:
-	from cq_agent.ai.agent_qa import run_agentic_qa  # type: ignore
-except Exception:  # pragma: no cover
-	run_agentic_qa = None  # type: ignore
+# Lazy imports - only import cq_agent modules when needed
+# This allows the error handler to catch installation issues gracefully
+def _import_cq_agent_modules():
+	"""Import cq_agent modules with helpful error handling."""
+	try:
+		from cq_agent.ingestion import load_repo
+		from cq_agent.analyzers import analyze_python, analyze_js_ts, Issue
+		from cq_agent.metrics import detect_near_duplicates, detect_docs_tests_hints
+		from cq_agent.scoring import prioritize_issues
+		from cq_agent.reporting import write_markdown_report, write_sarif
+		from cq_agent.graph import build_dependency_graph, compute_hotspots
+		from cq_agent.qa import build_index
+		from cq_agent.autofix import compute_autofixes, generate_patch, apply_edits
+		from cq_agent.ai import enhance_issues_with_ai
+		
+		# Optional AI modules
+		try:
+			from cq_agent.ai.deepseek import answer_codebase_question  # type: ignore
+		except Exception:  # pragma: no cover
+			answer_codebase_question = None  # type: ignore
+		try:
+			from cq_agent.ai.local_llm import answer_with_local_llm  # type: ignore
+		except Exception:  # pragma: no cover
+			answer_with_local_llm = None  # type: ignore
+		try:
+			from cq_agent.ai.agent_qa import run_agentic_qa  # type: ignore
+		except Exception:  # pragma: no cover
+			run_agentic_qa = None  # type: ignore
+		
+		return {
+			"load_repo": load_repo,
+			"analyze_python": analyze_python,
+			"analyze_js_ts": analyze_js_ts,
+			"Issue": Issue,
+			"detect_near_duplicates": detect_near_duplicates,
+			"detect_docs_tests_hints": detect_docs_tests_hints,
+			"prioritize_issues": prioritize_issues,
+			"write_markdown_report": write_markdown_report,
+			"write_sarif": write_sarif,
+			"build_dependency_graph": build_dependency_graph,
+			"compute_hotspots": compute_hotspots,
+			"build_index": build_index,
+			"compute_autofixes": compute_autofixes,
+			"generate_patch": generate_patch,
+			"apply_edits": apply_edits,
+			"enhance_issues_with_ai": enhance_issues_with_ai,
+			"answer_codebase_question": answer_codebase_question,
+			"answer_with_local_llm": answer_with_local_llm,
+			"run_agentic_qa": run_agentic_qa,
+		}
+	except ImportError as e:
+		if "cq_agent" in str(e):
+			print("=" * 70, file=sys.stderr)
+			print("ERROR: cq_agent module not found!", file=sys.stderr)
+			print("=" * 70, file=sys.stderr)
+			print("\nThe package is not properly installed.", file=sys.stderr)
+			print("\nTo fix this, please install the package:", file=sys.stderr)
+			print("\n  1. Navigate to the Code-Quality-Agent directory", file=sys.stderr)
+			print("  2. Run: pip install -e .", file=sys.stderr)
+			print("     OR: pip install .", file=sys.stderr)
+			print("\nIf you're in a virtual environment, make sure it's activated.", file=sys.stderr)
+			print("If you installed globally, try: pip install --upgrade --force-reinstall .", file=sys.stderr)
+			print("\nCurrent Python path:", file=sys.stderr)
+			for p in sys.path:
+				print(f"  - {p}", file=sys.stderr)
+			print("=" * 70, file=sys.stderr)
+			sys.exit(1)
+		raise
 
 
 def command_analyze(path: str, md: str | None, sarif: str | None, autofix: bool, autofix_dry_run: bool, incremental: bool, workers: int | None, deepseek: bool) -> int:
+	# Import modules lazily (will exit with helpful error if not installed)
+	mods = _import_cq_agent_modules()
+	
 	root = Path(path).expanduser().resolve()
 	if not root.exists():
 		print(f"Path not found: {root}")
 		return 1
 	print(f"[MVP] Analyze started for: {root}")
-	repo = load_repo(str(root), incremental=incremental)
+	repo = mods["load_repo"](str(root), incremental=incremental)
 	langs = ", ".join(repo["languages"]) or "(none)"
 	print(f"Files: {repo['summary']['file_count']} | SLOC: {repo['summary']['sloc_total']} | Languages: {langs}")
 
-	issues: list[Issue] = []
+	issues: list = []
 	if "python" in repo["languages"]:
-		issues.extend(analyze_python(root))
+		issues.extend(mods["analyze_python"](root))
 	if any(lang in repo["languages"] for lang in ("javascript", "typescript")):
-		issues.extend(analyze_js_ts(root))
-	issues.extend(detect_near_duplicates(repo))
-	issues.extend(detect_docs_tests_hints(repo))
+		issues.extend(mods["analyze_js_ts"](root))
+	issues.extend(mods["detect_near_duplicates"](repo))
+	issues.extend(mods["detect_docs_tests_hints"](repo))
 
-	issues = prioritize_issues(issues)
-	graph = build_dependency_graph(repo)
-	hotspots = compute_hotspots(repo, graph)
+	issues = mods["prioritize_issues"](issues)
+	graph = mods["build_dependency_graph"](repo)
+	hotspots = mods["compute_hotspots"](repo, graph)
 
 	# Optional AI enhancement (DeepSeek)
 	if deepseek:
-		import os
 		api_key = os.getenv("DEEPSEEK_API_KEY", "")
 		if api_key:
 			try:
-				issues = enhance_issues_with_ai(issues, repo, api_key)
+				issues = mods["enhance_issues_with_ai"](issues, repo, api_key)
 				print("[AI] DeepSeek enhancement applied.")
 			except Exception as exc:
 				print(f"[AI] Skipped (error): {exc}")
@@ -92,21 +140,21 @@ def command_analyze(path: str, md: str | None, sarif: str | None, autofix: bool,
 		print(f"- [{it['severity']}] {it['source']} {it['category']} {it['file']}:{it['start_line']} - {it['title']}")
 
 	if md:
-		write_markdown_report(Path(md), root, repo["summary"], issues, hotspots)
+		mods["write_markdown_report"](Path(md), root, repo["summary"], issues, hotspots)
 		print(f"Wrote Markdown report to: {md}")
 	if sarif:
-		write_sarif(Path(sarif), root, issues)
+		mods["write_sarif"](Path(sarif), root, issues)
 		print(f"Wrote SARIF report to: {sarif}")
 
 	if autofix or autofix_dry_run:
-		edits = compute_autofixes(root, issues)
+		edits = mods["compute_autofixes"](root, issues)
 		print(f"Autofix candidates: {len(edits)}")
 		if edits:
-			patch_text = generate_patch(edits, root)
+			patch_text = mods["generate_patch"](edits, root)
 			print("--- Autofix unified diff (preview) ---")
 			print(patch_text)
 			if autofix and not autofix_dry_run:
-				results = apply_edits(edits)
+				results = mods["apply_edits"](edits)
 				applied = sum(1 for _, ok in results if ok)
 				print(f"Applied edits: {applied}/{len(results)}")
 
@@ -115,13 +163,16 @@ def command_analyze(path: str, md: str | None, sarif: str | None, autofix: bool,
 
 
 def command_qa(path: str, deepseek: bool = False, local_llm: bool = False, local_model: str | None = None, agent: bool = False, agent_backend: str | None = None, agent_model: str | None = None, llama_cpp_model: str | None = None) -> int:
+	# Import modules lazily (will exit with helpful error if not installed)
+	mods = _import_cq_agent_modules()
+	
 	root = Path(path).expanduser().resolve()
 	if not root.exists():
 		print(f"Path not found: {root}")
 		return 1
 	print(f"[MVP] QA over: {root}. Type 'exit' to quit.")
-	repo = load_repo(str(root))
-	index = build_index(repo)
+	repo = mods["load_repo"](str(root))
+	index = mods["build_index"](repo)
 	# Maintain a short rolling conversation history for agent backends
 	history: list[tuple[str, str]] = []
 	while True:
@@ -135,13 +186,13 @@ def command_qa(path: str, deepseek: bool = False, local_llm: bool = False, local
 		# Append user message to conversation history (bounded later)
 		history.append(("user", q))
 		# Agentic mode takes precedence
-		if agent and run_agentic_qa is not None:
+		if agent and mods["run_agentic_qa"] is not None:
 			backend = (agent_backend or ("deepseek" if deepseek else "extractive"))
 			# Provide a safe default model for HF backend if none was supplied
 			if backend == "hf" and not (agent_model or local_model):
 				agent_model = "HuggingFaceH4/zephyr-7b-beta"
 			try:
-				ans, refs = run_agentic_qa(q, repo, backend=backend, model=agent_model or local_model, history=history)
+				ans, refs = mods["run_agentic_qa"](q, repo, backend=backend, model=agent_model or local_model, history=history)
 				if ans:
 					print(f"A> {ans}")
 					# Add assistant reply to conversation history and keep last 6 turns
@@ -150,11 +201,10 @@ def command_qa(path: str, deepseek: bool = False, local_llm: bool = False, local
 				elif backend == "hf":
 					# Provide diagnostics to help users configure HF correctly
 					model_used = (agent_model or local_model or "HuggingFaceH4/zephyr-7b-beta")
-					import os as _os
-					hf_router = bool(_os.getenv("HF_TOKEN"))
-					hf_api = bool(_os.getenv("HUGGINGFACEHUB_API_TOKEN"))
-					path = "Router(OpenAI)" if hf_router else ("InferenceAPI" if hf_api else "none")
-					print(f"[HF] No answer. path={path} model={model_used} HF_TOKEN={hf_router} HUGGINGFACEHUB_API_TOKEN={hf_api}")
+					hf_router = bool(os.getenv("HF_TOKEN"))
+					hf_api = bool(os.getenv("HUGGINGFACEHUB_API_TOKEN"))
+					path_str = "Router(OpenAI)" if hf_router else ("InferenceAPI" if hf_api else "none")
+					print(f"[HF] No answer. path={path_str} model={model_used} HF_TOKEN={hf_router} HUGGINGFACEHUB_API_TOKEN={hf_api}")
 					print("      Tip: Set HF_TOKEN for Router (preferred) OR HUGGINGFACEHUB_API_TOKEN for Inference API; ensure model id has access.")
 					print("      Try: --agent-model 'HuggingFaceH4/zephyr-7b-beta:featherless-ai' (Router) or 'HuggingFaceH4/zephyr-7b-beta' (API).")
 				# Show references from agent run
@@ -163,18 +213,17 @@ def command_qa(path: str, deepseek: bool = False, local_llm: bool = False, local
 			except Exception as exc:
 				print(f"[Agent] Skipped (error): {exc}")
 		# Otherwise DeepSeek AI
-		elif deepseek and answer_codebase_question is not None:
-			import os
+		elif deepseek and mods["answer_codebase_question"] is not None:
 			api_key = os.getenv("DEEPSEEK_API_KEY", "")
 			if api_key:
 				try:
-					answer = answer_codebase_question(q, repo, api_key)
+					answer = mods["answer_codebase_question"](q, repo, api_key)
 					if answer:
 						print(f"A> {answer}")
 				except Exception as exc:
 					print(f"[AI] Skipped (error): {exc}")
 		# Optionally answer via local LLM (LangChain + Ollama)
-		elif local_llm and answer_with_local_llm is not None:
+		elif local_llm and mods["answer_with_local_llm"] is not None:
 			# Build small context from top TF-IDF hits
 			hits = index.search(q, top_k=5)
 			ctx = []
@@ -182,7 +231,7 @@ def command_qa(path: str, deepseek: bool = False, local_llm: bool = False, local
 				ctx.append(f"{ch.path}:{ch.start_line}-{ch.end_line}\n{ch.text}")
 			try:
 				model_name = llama_cpp_model or local_model or "llama3.1"
-				resp = answer_with_local_llm(q, ctx, model=model_name)
+				resp = mods["answer_with_local_llm"](q, ctx, model=model_name)
 				if resp:
 					print(f"A> {resp}")
 			except Exception as exc:

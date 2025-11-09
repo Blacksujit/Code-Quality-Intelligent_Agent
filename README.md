@@ -155,20 +155,36 @@ graph TB
 
 ### 📦 **Installation**
 
+#### **Quick Install (Global - Recommended)**
+
 ```bash
-# Clone the repository
-git clone https://github.com/Blacksujit/Code-Quality-Intelligent_Agent
-cd code-quality-agent
+# Navigate to Code-Quality-Agent directory
+cd Code-Quality-Agent
 
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+# Run the installation script
+python install_global.py
 
-# Install the package
-python -m pip install -e .
+# OR manually install
+pip install -e .
+```
 
-# Install optional AI dependencies
-python -m pip install transformers torch
+**After installation, you can use `cq-agent` from ANY directory!**
+
+```bash
+# From any project directory
+cd /path/to/your/project
+cq-agent analyze .
+```
+
+#### **Detailed Installation Guide**
+
+For detailed installation instructions, troubleshooting, and different installation methods, see **[INSTALL.md](INSTALL.md)**.
+
+#### **Optional: AI Dependencies**
+
+```bash
+# For AI features (optional)
+pip install transformers torch
 ```
 
 ### 🚀 **Run Web Interface**
@@ -179,7 +195,14 @@ streamlit run src/cq_agent/web/app.py
 
 # Or use the demo script
 python demo_ui.py
+
+# Windows: If you get connection errors, use localhost explicitly
+streamlit run src/cq_agent/web/app.py --server.address localhost --server.port 8501
 ```
+
+**🌐 Access the web interface:**
+- **Windows/Local**: `http://localhost:8501` or `http://127.0.0.1:8501`
+- **Linux/Mac**: `http://localhost:8501` or `http://0.0.0.0:8501`
 
 **🌐 Open your browser to:** `http://localhost:8501`
 
@@ -279,6 +302,13 @@ The Streamlit web interface provides a modern, interactive experience:
 
 
 ## 🔌 CLI Commands
+
+> **💡 Windows PATH Issue?** If `cq-agent` command is not recognized, use:
+> ```powershell
+> python -m cq_agent.cli.main analyze .  # Full path
+> python -m cq_agent analyze .         # Shorter version
+> ```
+> See [INSTALL.md](INSTALL.md) for PATH troubleshooting.
 
 #### **📊 Analysis Commands**
 
@@ -699,12 +729,28 @@ echo "DEEPSEEK_API_KEY=your_key" >> .env
 ```
 
 #### **🌐 Streamlit Issues**
+
+**Windows: Connection timeout or "can't be reached"**
+```powershell
+# Use localhost explicitly (Windows doesn't work well with 0.0.0.0)
+streamlit run src/cq_agent/web/app.py --server.address localhost --server.port 8501
+
+# Or use the Windows helper script
+.\run_web_windows.ps1
+
+# Access at: http://localhost:8501 (NOT http://0.0.0.0:8501)
+```
+
+**General Streamlit Issues:**
 ```bash
 # Clear Streamlit cache
 streamlit cache clear
 
-# Check port availability
+# Check port availability (Linux/Mac)
 lsof -i :8501
+
+# Windows: Check port
+netstat -ano | findstr :8501
 
 # Use different port
 streamlit run src/cq_agent/web/app.py --server.port 8502

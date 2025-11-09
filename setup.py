@@ -7,6 +7,8 @@ setup(
     author="Sujit Nirmal",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
+    include_package_data=True,
+    zip_safe=False,
     python_requires=">=3.11",
     install_requires=[
         "typer>=0.9.0",
@@ -49,18 +51,10 @@ setup(
         "pip-review>=1.0.0",
         "pip-upgrade>=1.0.0",
         "pip-autoremove>=0.10.0",
-        "pip-tools>=7.0.0",
-        "pipdeptree>=2.0.0",
-        "pip-audit>=2.0.0",
-        "pip-check>=2.0.0",
-        "pip-review>=1.0.0",
-        "pip-upgrade>=1.0.0",
-        "pip-autoremove>=0.10.0",
         "faiss-cpu>=1.7.0",
         "sentence-transformers>=2.2.0",
         "langchain>=0.1.0",
         "langchain-community>=0.0.1",
-        "gpt4all>=2.0.0",
     ],
     extras_require={
         "llama-cpp": ["llama-cpp-python>=0.2.0"],
@@ -68,7 +62,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "cq-agent=cq_agent.cli.main:main",
+            "cq-agent=cq_agent.cli.__main__:main",
         ],
     },
 )
