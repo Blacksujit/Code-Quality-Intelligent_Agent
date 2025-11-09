@@ -102,10 +102,3 @@ pip install .  # ERROR: No setup.py here!
 cd E:\Code-Quality-Agent
 pip install .  # SUCCESS!
 ```
-
-## 📖 Need More Help?
-
-- **Detailed Installation Guide**: See [INSTALL.md](INSTALL.md)
-- **Troubleshooting**: See [INSTALL.md#troubleshooting](INSTALL.md#-troubleshooting)
-- **Full Documentation**: See [README.md](README.md)
-
