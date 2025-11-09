@@ -308,7 +308,7 @@ The Streamlit web interface provides a modern, interactive experience:
 > python -m cq_agent.cli.main analyze .  # Full path
 > python -m cq_agent analyze .         # Shorter version
 > ```
-> See [INSTALL.md](INSTALL.md) for PATH troubleshooting.
+> See [INSTALL.md](./deployement-docs/INSTALL.md) for PATH troubleshooting.
 
 #### **📊 Analysis Commands**
 
