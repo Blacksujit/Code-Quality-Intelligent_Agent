@@ -206,13 +206,6 @@ After installation, verify everything works:
 - [ ] `cq-agent analyze .` works from a test project directory
 - [ ] No "ModuleNotFoundError" messages appear
 
-## 📝 Next Steps
-
-Once installed, see the [README.md](README.md) for usage examples:
-
-- [CLI Commands](README.md#-cli-commands)
-- [Web Interface](README.md#-web-interface)
-- [AI Integration](README.md#-ai-integration)
 
 ## 🆘 Still Having Issues?
 
