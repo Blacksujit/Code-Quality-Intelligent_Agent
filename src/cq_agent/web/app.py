@@ -95,6 +95,29 @@ def _extract_zip_to_session_dir(uploaded) -> str:
     st.session_state.uploaded_zip_dir = str(root)
     return str(root)
 
+
+def _normalize_dep_graph(graph_obj, repo) -> dict:
+	"""Normalize dependency graph output into a dict-like structure.
+
+	In some deployment scenarios, imports may fall back to dummy functions that
+	return a list. This prevents `graph.items()` crashes.
+	"""
+	try:
+		if isinstance(graph_obj, dict):
+			return graph_obj
+		if hasattr(graph_obj, "items") and callable(getattr(graph_obj, "items")):
+			return graph_obj
+	except Exception:
+		pass
+
+	# Fallback: empty graph with all files present
+	files = []
+	try:
+		files = list((repo or {}).get("files", {}).keys())
+	except Exception:
+		files = []
+	return {p: set() for p in files}
+
 # Simple fallback import strategy
 def _import_modules():
     """Import modules with simple fallback strategy"""
@@ -956,6 +979,7 @@ def run_analysis_cached(path_str: str, max_files_int: int, fast: bool):
 
 		# Build graph early for centrality
 		graph = build_dependency_graph(repo)
+		graph = _normalize_dep_graph(graph, repo)
 		hotspots = compute_hotspots(repo, graph)
 
 		# Fast mode: targeted linting using priority sampling and cached TF-IDF index
@@ -1093,6 +1117,7 @@ def run_analysis_streaming(path_str: str, max_files_int: int, fast: bool, use_de
 	status_text.text("📊 Building dependency graph...")
 	progress_bar.progress(70)
 	graph = build_dependency_graph(repo)
+	graph = _normalize_dep_graph(graph, repo)
 	hotspots = compute_hotspots(repo, graph)
 	
 	# Step 5: Fast mode enhancements
