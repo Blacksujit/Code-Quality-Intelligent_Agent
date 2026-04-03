@@ -121,6 +121,7 @@ def _normalize_dep_graph(graph_obj, repo) -> dict:
 # Simple fallback import strategy
 def _import_modules():
     """Import modules with simple fallback strategy"""
+    globals()["_IMPORT_MODULES_ERROR"] = None
     # Try the most likely working imports first
     try:
         # Strategy 1: Try cq_agent imports
@@ -141,7 +142,8 @@ def _import_modules():
             'reporting': type('Module', (), {'build_markdown_text': build_markdown_text}),
             'autofix': type('Module', (), {'compute_autofixes': compute_autofixes, 'generate_patch': generate_patch, 'apply_edits': apply_edits})
         }
-    except ImportError:
+    except ImportError as e:
+        globals()["_IMPORT_MODULES_ERROR"] = e
         pass
     
     # Strategy 2: Try direct imports
@@ -204,6 +206,30 @@ def _import_modules():
         'reporting': type('Module', (), {'build_markdown_text': dummy_function}),
         'autofix': type('Module', (), {'compute_autofixes': dummy_function, 'generate_patch': dummy_function, 'apply_edits': dummy_function})
     }
+
+
+def _validate_repo(repo):
+	if not isinstance(repo, dict):
+		raise TypeError(f"load_repo() returned {type(repo).__name__}")
+	files = repo.get("files")
+	if not isinstance(files, dict):
+		raise TypeError(f"repo['files'] is {type(files).__name__}")
+	langs = repo.get("languages")
+	if not isinstance(langs, list):
+		raise TypeError(f"repo['languages'] is {type(langs).__name__}")
+	return repo
+
+
+def _repo_import_failure_message(err: Exception) -> str:
+	base = (
+		"Core modules failed to import on this environment, so analysis cannot run.\n\n"
+		"This usually happens on Streamlit Cloud when imports fall back to dummy functions.\n\n"
+		f"Validation error: {err}"
+	)
+	imp_err = globals().get("_IMPORT_MODULES_ERROR")
+	if imp_err is not None:
+		base += f"\n\nLast import error: {imp_err}"
+	return base
 
 # Import the modules
 _modules = _import_modules()
@@ -964,6 +990,10 @@ def run_analysis_cached(path_str: str, max_files_int: int, fast: bool):
 			# Smaller cap and early return for responsiveness on huge repos
 			effective_max = min(effective_max, 800)
 		repo = load_repo(str(root), max_files=effective_max)
+		try:
+			repo = _validate_repo(repo)
+		except Exception as e:
+			raise RuntimeError(_repo_import_failure_message(e)) from e
 
 		issues: list[Issue] = []
 		if not fast:
@@ -1094,6 +1124,13 @@ def run_analysis_streaming(path_str: str, max_files_int: int, fast: bool, use_de
 	status_text.text("📁 Loading repository...")
 	progress_bar.progress(10)
 	repo = load_repo(str(root), max_files=effective_max)
+	try:
+		repo = _validate_repo(repo)
+	except Exception as e:
+		# Clear progress indicators before failing
+		progress_bar.empty()
+		status_text.empty()
+		raise RuntimeError(_repo_import_failure_message(e)) from e
 	
 	# Step 2: Basic analysis
 	status_text.text("🔍 Running code analysis...")
