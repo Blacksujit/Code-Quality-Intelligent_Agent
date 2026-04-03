@@ -94,7 +94,7 @@ docker-compose.override.yml
 *.log
 logs/
 analytics/
-metrics/
+/metrics/
 
 # 🎯 Streamlit
 .streamlit/secrets.toml
