@@ -122,6 +122,7 @@ def _normalize_dep_graph(graph_obj, repo) -> dict:
 def _import_modules():
     """Import modules with simple fallback strategy"""
     globals()["_IMPORT_MODULES_ERROR"] = None
+    globals()["_CORE_IMPORTS_OK"] = False
     # Try the most likely working imports first
     try:
         # Strategy 1: Try cq_agent imports
@@ -133,6 +134,7 @@ def _import_modules():
         from cq_agent.reporting.markdown import build_markdown_text
         from cq_agent.autofix.auto import compute_autofixes, generate_patch, apply_edits
         
+        globals()["_CORE_IMPORTS_OK"] = True
         return {
             'ingestion': type('Module', (), {'load_repo': load_repo}),
             'analyzers': type('Module', (), {'analyze_python': analyze_python, 'analyze_js_ts': analyze_js_ts, 'Issue': Issue}),
@@ -156,6 +158,7 @@ def _import_modules():
         from reporting.markdown import build_markdown_text
         from autofix.auto import compute_autofixes, generate_patch, apply_edits
         
+        globals()["_CORE_IMPORTS_OK"] = True
         return {
             'ingestion': type('Module', (), {'load_repo': load_repo}),
             'analyzers': type('Module', (), {'analyze_python': analyze_python, 'analyze_js_ts': analyze_js_ts, 'Issue': Issue}),
@@ -165,7 +168,8 @@ def _import_modules():
             'reporting': type('Module', (), {'build_markdown_text': build_markdown_text}),
             'autofix': type('Module', (), {'compute_autofixes': compute_autofixes, 'generate_patch': generate_patch, 'apply_edits': apply_edits})
         }
-    except ImportError:
+    except ImportError as e:
+        globals()["_IMPORT_MODULES_ERROR"] = globals().get("_IMPORT_MODULES_ERROR") or e
         pass
     
     # Strategy 3: Try absolute imports
@@ -178,6 +182,7 @@ def _import_modules():
         from src.cq_agent.reporting.markdown import build_markdown_text
         from src.cq_agent.autofix.auto import compute_autofixes, generate_patch, apply_edits
         
+        globals()["_CORE_IMPORTS_OK"] = True
         return {
             'ingestion': type('Module', (), {'load_repo': load_repo}),
             'analyzers': type('Module', (), {'analyze_python': analyze_python, 'analyze_js_ts': analyze_js_ts, 'Issue': Issue}),
@@ -187,24 +192,26 @@ def _import_modules():
             'reporting': type('Module', (), {'build_markdown_text': build_markdown_text}),
             'autofix': type('Module', (), {'compute_autofixes': compute_autofixes, 'generate_patch': generate_patch, 'apply_edits': apply_edits})
         }
-    except ImportError:
+    except ImportError as e:
+        globals()["_IMPORT_MODULES_ERROR"] = globals().get("_IMPORT_MODULES_ERROR") or e
         pass
     
     # If all fail, create dummy functions to prevent crashes
-    def dummy_function(*args, **kwargs):
-        return []
+    def _dummy_fail(*args, **kwargs):
+        err = globals().get("_IMPORT_MODULES_ERROR")
+        raise RuntimeError(f"Core modules failed to import; analysis is unavailable. Last import error: {err}")
     
     def dummy_issue(*args, **kwargs):
         return type('Issue', (), {'file': '', 'line': 0, 'message': '', 'severity': 'low'})()
     
     return {
-        'ingestion': type('Module', (), {'load_repo': dummy_function}),
-        'analyzers': type('Module', (), {'analyze_python': dummy_function, 'analyze_js_ts': dummy_function, 'Issue': dummy_issue}),
-        'metrics': type('Module', (), {'detect_near_duplicates': dummy_function, 'detect_docs_tests_hints': dummy_function}),
-        'scoring': type('Module', (), {'prioritize_issues': dummy_function}),
-        'graph': type('Module', (), {'build_dependency_graph': dummy_function, 'compute_hotspots': dummy_function}),
-        'reporting': type('Module', (), {'build_markdown_text': dummy_function}),
-        'autofix': type('Module', (), {'compute_autofixes': dummy_function, 'generate_patch': dummy_function, 'apply_edits': dummy_function})
+        'ingestion': type('Module', (), {'load_repo': _dummy_fail}),
+        'analyzers': type('Module', (), {'analyze_python': _dummy_fail, 'analyze_js_ts': _dummy_fail, 'Issue': dummy_issue}),
+        'metrics': type('Module', (), {'detect_near_duplicates': _dummy_fail, 'detect_docs_tests_hints': _dummy_fail}),
+        'scoring': type('Module', (), {'prioritize_issues': _dummy_fail}),
+        'graph': type('Module', (), {'build_dependency_graph': _dummy_fail, 'compute_hotspots': _dummy_fail}),
+        'reporting': type('Module', (), {'build_markdown_text': _dummy_fail}),
+        'autofix': type('Module', (), {'compute_autofixes': _dummy_fail, 'generate_patch': _dummy_fail, 'apply_edits': _dummy_fail})
     }
 
 
