@@ -1,9 +1,14 @@
 from __future__ import annotations
 
 import io
+import hashlib
+import shutil
+import tempfile
+import zipfile
 from pathlib import Path
 import sys
 from typing import List
+
 # Ensure proper Python path for Streamlit Cloud deployment
 _CURRENT = Path(__file__).resolve()
 
@@ -32,6 +37,60 @@ try:
     load_dotenv()
 except Exception:
     pass
+
+def _is_windows_abs_path(p: str) -> bool:
+    if not p:
+        return False
+    p = p.strip()
+    return len(p) >= 3 and p[1] == ":" and (p[2] == "\\" or p[2] == "/")
+
+def _is_streamlit_cloud() -> bool:
+    if os.name != "nt":
+        try:
+            if Path("/mount/src").exists():
+                return True
+        except Exception:
+            pass
+    for k in ("STREAMLIT_SHARING", "STREAMLIT_CLOUD", "STREAMLIT_SERVER_HEADLESS"):
+        if os.getenv(k):
+            return True
+    return False
+
+def _clone_git_repo(git_url: str) -> str:
+    from git import Repo
+    cache_dir = Path.home() / ".cq_agent_cache" / "clones"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    key = hashlib.sha256(git_url.strip().encode("utf-8")).hexdigest()[:16]
+    dest = cache_dir / key
+    if dest.exists() and any(dest.iterdir()):
+        return str(dest)
+    try:
+        Repo.clone_from(git_url.strip(), str(dest))
+        return str(dest)
+    except Exception:
+        if dest.exists():
+            try:
+                shutil.rmtree(dest, ignore_errors=True)
+            except Exception:
+                pass
+        raise
+
+def _extract_zip_to_session_dir(uploaded) -> str:
+    if "uploaded_zip_dir" in st.session_state:
+        existing = st.session_state.get("uploaded_zip_dir")
+        if existing and Path(existing).exists():
+            return existing
+
+    base = Path(tempfile.mkdtemp(prefix="cq_repo_"))
+    zip_path = base / "repo.zip"
+    zip_path.write_bytes(uploaded.getvalue())
+    with zipfile.ZipFile(zip_path, "r") as zf:
+        zf.extractall(base)
+
+    children = [p for p in base.iterdir() if p.name != "repo.zip"]
+    root = children[0] if len(children) == 1 and children[0].is_dir() else base
+    st.session_state.uploaded_zip_dir = str(root)
+    return str(root)
 
 # Simple fallback import strategy
 def _import_modules():
@@ -153,7 +212,18 @@ def _import_remaining_modules():
         from cq_agent.qa.index import build_index as build_tfidf_index
         from cq_agent.qa.index import save_index as save_tfidf_index
         from cq_agent.qa.index import load_index as load_tfidf_index
-        from cq_agent.qa.index import _repo_head_key
+        try:
+            from cq_agent.qa.index import _repo_head_key
+        except ImportError:
+            # Fallback if _repo_headkey is not available due to import issues
+            def _repo_head_key(repo):
+                import hashlib
+                root = repo.get("root", "")
+                hasher = hashlib.sha256(root.encode("utf-8"))
+                for path, rec in sorted(repo.get("files", {}).items()):
+                    hasher.update(path.encode("utf-8"))
+                    hasher.update(rec.get("hash", "").encode("utf-8"))
+                return hasher.hexdigest()[:16]
         from cq_agent.analyzers.python_analyzers import run_ruff_on_files, run_bandit_on_paths
         from cq_agent.ai import enhance_issues_with_ai, answer_codebase_question
         try:
@@ -194,7 +264,18 @@ def _import_remaining_modules():
             from qa.index import build_index as build_tfidf_index
             from qa.index import save_index as save_tfidf_index
             from qa.index import load_index as load_tfidf_index
-            from qa.index import _repo_head_key
+            try:
+                from qa.index import _repo_head_key
+            except ImportError:
+                # Fallback if _repo_headkey is not available due to import issues
+                def _repo_head_key(repo):
+                    import hashlib
+                    root = repo.get("root", "")
+                    hasher = hashlib.sha256(root.encode("utf-8"))
+                    for path, rec in sorted(repo.get("files", {}).items()):
+                        hasher.update(path.encode("utf-8"))
+                        hasher.update(rec.get("hash", "").encode("utf-8"))
+                    return hasher.hexdigest()[:16]
             from analyzers.python_analyzers import run_ruff_on_files, run_bandit_on_paths
             from ai import enhance_issues_with_ai, answer_codebase_question
             try:
@@ -703,19 +784,57 @@ with st.sidebar:
 		unsafe_allow_html=True,
 	)
 	
-	default_path = str(Path.cwd())
-	path = st.text_input(
-		"📁 Repository Path", 
-		value=default_path, 
-		help="Enter the path to your code repository (single path only, no spaces or multiple paths)"
+	is_cloud = _is_streamlit_cloud()
+	repo_source = st.selectbox(
+		"📦 Repository Source",
+		["Local Path", "Git URL", "Upload ZIP"],
+		index=1 if is_cloud else 0,
+		help="On Streamlit Cloud, use Git URL or ZIP upload. Local disk paths like E:\\... are not available there."
 	)
+
+	default_path = str(Path.cwd())
+	path = ""
+	git_url = ""
+	uploaded_zip = None
+
+	if repo_source == "Local Path":
+		path = st.text_input(
+			"📁 Repository Path",
+			value=default_path,
+			help="Enter a path available on this machine. For Streamlit Cloud, use Git URL or ZIP upload."
+		)
+	elif repo_source == "Git URL":
+		git_url = st.text_input(
+			"🔗 Git Repository URL",
+			value="",
+			help="Example: https://github.com/user/repo.git"
+		)
+		if git_url.strip():
+			if st.button("⬇️ Clone Repo", width='stretch'):
+				try:
+					path = _clone_git_repo(git_url)
+					st.success(f"Cloned to: {path}")
+				except Exception as e:
+					st.error(f"❌ Failed to clone repo: {e}")
+	elif repo_source == "Upload ZIP":
+		uploaded_zip = st.file_uploader(
+			"📦 Upload repository ZIP",
+			type=["zip"],
+			help="Upload a ZIP of your repo. The app will extract and analyze it."
+		)
+		if uploaded_zip is not None:
+			try:
+				path = _extract_zip_to_session_dir(uploaded_zip)
+				st.success(f"Uploaded repo extracted to: {path}")
+			except Exception as e:
+				st.error(f"❌ Failed to extract ZIP: {e}")
 	
 	# Clean the path input immediately
 	if path:
 		path = path.strip()
 	max_files = st.number_input("📊 Max Files to Scan", min_value=50, max_value=10000, value=2000, step=50, help="Limit files for faster analysis on large repos")
 	fast_mode = st.checkbox("⚡ Fast scan (large repos)", value=True, help="Skips heavy linters and samples files to speed up very large codebases")
-	clear_cache_btn = st.button("🧹 Clear Analysis Cache", use_container_width=True)
+	clear_cache_btn = st.button("🧹 Clear Analysis Cache", width='stretch')
 	
 	st.markdown("---")
 	
@@ -751,7 +870,7 @@ with st.sidebar:
 	
 	st.markdown("---")
 	
-	run_clicked = st.button("🚀 Run Analysis", type="primary", use_container_width=True)
+	run_clicked = st.button("🚀 Run Analysis", type="primary", width='stretch')
 	
 	st.markdown("---")
 	
@@ -1089,6 +1208,12 @@ if run_clicked:
 	if not clean_path:
 		st.error("❌ Please enter a repository path")
 		st.stop()
+	if is_cloud and _is_windows_abs_path(clean_path):
+		st.error(
+			"❌ This looks like a Windows local path, but Streamlit Cloud runs on Linux.\n\n"
+			"Use **Git URL** or **Upload ZIP** in the sidebar instead of `E:\\...`."
+		)
+		st.stop()
 	
 	test_root = Path(clean_path).expanduser().resolve()
 	if not test_root.exists():
@@ -1248,8 +1373,10 @@ if repo_summary is not None and issues_df is not None:
 	with tabs[2]:
 		st.markdown("### 📁 File Details & Code Context")
 		if not issues_df.empty:
-			# Group issues by file
-			file_issues = issues_df.groupby('file').apply(lambda x: x.to_dict('records'), include_groups=False).to_dict()
+			# Group issues by file - use compatible approach for all pandas versions
+			file_issues = {}
+			for file_name, group in issues_df.groupby('file'):
+				file_issues[file_name] = group.to_dict('records')
 			selected_file = st.selectbox("📂 Select file to view details:", list(file_issues.keys()))
 			
 			if selected_file:
@@ -1354,7 +1481,7 @@ if repo_summary is not None and issues_df is not None:
 				
 				col1, col2 = st.columns(2)
 				with col1:
-					if st.button("🚀 Apply Autofixes", type="primary", use_container_width=True):
+					if st.button("🚀 Apply Autofixes", type="primary", width='stretch'):
 						if st.session_state.get("autofix_confirmed", False):
 							results = apply_edits(edits)
 							applied = sum(1 for _, ok in results if ok)
@@ -1367,7 +1494,7 @@ if repo_summary is not None and issues_df is not None:
 							st.warning("⚠️ Click again to confirm applying autofixes to your files.")
 				with col2:
 					if st.session_state.get("autofix_confirmed", False):
-						if st.button("❌ Cancel", use_container_width=True):
+						if st.button("❌ Cancel", width='stretch'):
 							st.session_state.autofix_confirmed = False
 							st.rerun()
 			else:
@@ -1387,7 +1514,7 @@ if repo_summary is not None and issues_df is not None:
 					md_text, 
 					file_name="cq-report.md",
 					mime="text/markdown",
-					use_container_width=True
+					width='stretch'
 				)
 			
 			with col2:
@@ -1398,7 +1525,7 @@ if repo_summary is not None and issues_df is not None:
 					csv_buf.getvalue(), 
 					file_name="cq-issues.csv", 
 					mime="text/csv",
-					use_container_width=True
+					width='stretch'
 				)
 			
 			st.markdown("---")
@@ -1456,7 +1583,7 @@ if repo_summary is not None and issues_df is not None:
 			with viz_tabs[0]:  # Network Graph
 				st.markdown("#### Interactive Dependency Network")
 				if dep_viz.get('network_graph'):
-					st.plotly_chart(dep_viz['network_graph'], use_container_width=True, key="dep_network")
+					st.plotly_chart(dep_viz['network_graph'], width='stretch', key="dep_network")
 					st.markdown("""
 					<div style="background: rgba(255, 255, 255, 0.1); padding: 1rem; border-radius: 10px; margin: 1rem 0;">
 						<h4>💡 How to Use This Graph:</h4>
@@ -1473,7 +1600,7 @@ if repo_summary is not None and issues_df is not None:
 			with viz_tabs[1]:  # Hierarchy
 				st.markdown("#### Dependency Hierarchy")
 				if dep_viz.get('sunburst'):
-					st.plotly_chart(dep_viz['sunburst'], use_container_width=True, key="dep_sunburst")
+					st.plotly_chart(dep_viz['sunburst'], width='stretch', key="dep_sunburst")
 					st.markdown("""
 					<div style="background: rgba(255, 255, 255, 0.1); padding: 1rem; border-radius: 10px; margin: 1rem 0;">
 						<h4>🌞 Sunburst Chart Features:</h4>
@@ -1489,7 +1616,7 @@ if repo_summary is not None and issues_df is not None:
 			with viz_tabs[2]:  # Heatmap
 				st.markdown("#### Dependency Matrix")
 				if dep_viz.get('heatmap'):
-					st.plotly_chart(dep_viz['heatmap'], use_container_width=True, key="dep_heatmap")
+					st.plotly_chart(dep_viz['heatmap'], width='stretch', key="dep_heatmap")
 					st.markdown("""
 					<div style="background: rgba(255, 255, 255, 0.1); padding: 1rem; border-radius: 10px; margin: 1rem 0;">
 						<h4>🔥 Heatmap Insights:</h4>
@@ -1505,7 +1632,7 @@ if repo_summary is not None and issues_df is not None:
 			with viz_tabs[3]:  # Centrality
 				st.markdown("#### Centrality Analysis")
 				if dep_viz.get('centrality_analysis'):
-					st.plotly_chart(dep_viz['centrality_analysis'], use_container_width=True, key="dep_centrality")
+					st.plotly_chart(dep_viz['centrality_analysis'], width='stretch', key="dep_centrality")
 					st.markdown("""
 					<div style="background: rgba(255, 255, 255, 0.1); padding: 1rem; border-radius: 10px; margin: 1rem 0;">
 						<h4>📊 Centrality Metrics Explained:</h4>
@@ -1578,19 +1705,19 @@ if repo_summary is not None and issues_df is not None:
 			
 			with tab1:
 				if hotspot_viz.get('heatmap'):
-					st.plotly_chart(hotspot_viz['heatmap'], use_container_width=True, key="hot_heatmap")
+					st.plotly_chart(hotspot_viz['heatmap'], width='stretch', key="hot_heatmap")
 			
 			with tab2:
 				if hotspot_viz.get('scatter'):
-					st.plotly_chart(hotspot_viz['scatter'], use_container_width=True, key="hot_scatter")
+					st.plotly_chart(hotspot_viz['scatter'], width='stretch', key="hot_scatter")
 			
 			with tab3:
 				if hotspot_viz.get('language_comparison'):
-					st.plotly_chart(hotspot_viz['language_comparison'], use_container_width=True, key="hot_lang_comp")
+					st.plotly_chart(hotspot_viz['language_comparison'], width='stretch', key="hot_lang_comp")
 			
 			with tab4:
 				if hotspot_viz.get('treemap'):
-					st.plotly_chart(hotspot_viz['treemap'], use_container_width=True, key="hot_treemap")
+					st.plotly_chart(hotspot_viz['treemap'], width='stretch', key="hot_treemap")
 		else:
 			st.info("Upload a repository to see hotspot analysis")
 
@@ -1676,19 +1803,19 @@ if repo_summary is not None and issues_df is not None:
 			
 			with tab1:
 				if trend_viz.get('quality_trend'):
-					st.plotly_chart(trend_viz['quality_trend'], use_container_width=True, key="trend_quality")
+					st.plotly_chart(trend_viz['quality_trend'], width='stretch', key="trend_quality")
 			
 			with tab2:
 				if trend_viz.get('commit_activity'):
-					st.plotly_chart(trend_viz['commit_activity'], use_container_width=True, key="trend_commits")
+					st.plotly_chart(trend_viz['commit_activity'], width='stretch', key="trend_commits")
 			
 			with tab3:
 				if trend_viz.get('lines_changed'):
-					st.plotly_chart(trend_viz['lines_changed'], use_container_width=True, key="trend_lines")
+					st.plotly_chart(trend_viz['lines_changed'], width='stretch', key="trend_lines")
 			
 			with tab4:
 				if trend_viz.get('developer_activity'):
-					st.plotly_chart(trend_viz['developer_activity'], use_container_width=True, key="trend_devs")
+					st.plotly_chart(trend_viz['developer_activity'], width='stretch', key="trend_devs")
 		else:
 			st.info("Upload a repository to see trend analysis")
 
@@ -1736,7 +1863,7 @@ if repo_summary is not None and issues_df is not None:
 			
 			col1, col2 = st.columns([1, 4])
 			with col1:
-				ask_button = st.button("🚀 Ask AI", type="primary", use_container_width=True)
+				ask_button = st.button("🚀 Ask AI", type="primary", width='stretch')
 			
 			# Process question
 			if ask_button and question.strip():

@@ -6,13 +6,14 @@ from dataclasses import dataclass
 import json
 import hashlib
 from pathlib import Path
+from typing import List, Tuple, Dict
 
 from cq_agent.ingestion import RepoContext
 
 # Optional FAISS integration
 try:
-    from cq_agent.rag import create_faiss_rag_index, HybridRAGIndex
-    FAISS_AVAILABLE = True
+    from cq_agent.rag import create_faiss_rag_index, HybridRAGIndex, _RAG_AVAILABLE
+    FAISS_AVAILABLE = _RAG_AVAILABLE
 except ImportError:
     FAISS_AVAILABLE = False
 
