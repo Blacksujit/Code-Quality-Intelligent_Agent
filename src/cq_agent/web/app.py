@@ -57,7 +57,10 @@ def _is_streamlit_cloud() -> bool:
     return False
 
 def _clone_git_repo(git_url: str) -> str:
-    from git import Repo
+    try:
+        from git import Repo
+    except Exception as e:
+        raise RuntimeError("Git cloning is unavailable (missing gitpython). Ensure requirements.txt includes gitpython.") from e
     cache_dir = Path.home() / ".cq_agent_cache" / "clones"
     cache_dir.mkdir(parents=True, exist_ok=True)
     key = hashlib.sha256(git_url.strip().encode("utf-8")).hexdigest()[:16]
@@ -785,24 +788,31 @@ with st.sidebar:
 	)
 	
 	is_cloud = _is_streamlit_cloud()
+	if "selected_repo_path" not in st.session_state:
+		st.session_state.selected_repo_path = ""
+	if "selected_repo_source" not in st.session_state:
+		st.session_state.selected_repo_source = ""
 	repo_source = st.selectbox(
 		"📦 Repository Source",
 		["Local Path", "Git URL", "Upload ZIP"],
 		index=1 if is_cloud else 0,
 		help="On Streamlit Cloud, use Git URL or ZIP upload. Local disk paths like E:\\... are not available there."
 	)
+	st.session_state.selected_repo_source = repo_source
 
 	default_path = str(Path.cwd())
-	path = ""
+	path = st.session_state.selected_repo_path or ""
 	git_url = ""
 	uploaded_zip = None
 
 	if repo_source == "Local Path":
 		path = st.text_input(
 			"📁 Repository Path",
-			value=default_path,
+			value=path or default_path,
 			help="Enter a path available on this machine. For Streamlit Cloud, use Git URL or ZIP upload."
 		)
+		if path:
+			st.session_state.selected_repo_path = path.strip()
 	elif repo_source == "Git URL":
 		git_url = st.text_input(
 			"🔗 Git Repository URL",
@@ -813,6 +823,7 @@ with st.sidebar:
 			if st.button("⬇️ Clone Repo", width='stretch'):
 				try:
 					path = _clone_git_repo(git_url)
+					st.session_state.selected_repo_path = path
 					st.success(f"Cloned to: {path}")
 				except Exception as e:
 					st.error(f"❌ Failed to clone repo: {e}")
@@ -825,9 +836,14 @@ with st.sidebar:
 		if uploaded_zip is not None:
 			try:
 				path = _extract_zip_to_session_dir(uploaded_zip)
+				st.session_state.selected_repo_path = path
 				st.success(f"Uploaded repo extracted to: {path}")
 			except Exception as e:
 				st.error(f"❌ Failed to extract ZIP: {e}")
+	# Ensure we always use the persisted repo path when available
+	path = (st.session_state.selected_repo_path or path or "").strip()
+	if path:
+		st.caption(f"Selected repo: `{path}`")
 	
 	# Clean the path input immediately
 	if path:
