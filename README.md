@@ -17,6 +17,7 @@
 
 ## 📋 Table of Contents
 
+- [💻 Live Link](#-Live-Link)
 - [🎥 Explanation Video](#-explanation-video)
 - [📚 Architecture](#-architecture)
 - [🎯 Features](#-features)
@@ -33,6 +34,10 @@
 - [📄 License](#-license)
 
 ---
+
+## 💻 Live Link
+
+📺 Live Link of project: [Live Link Access](https://code-quality-agent.streamlit.app/)
 
 ## 🎥 Explanation Video
 
